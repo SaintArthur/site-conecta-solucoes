@@ -21,7 +21,7 @@
 :root{
   --navy:#06326e; --navy-deep:#041f46; --slate:#34495e; --slate-2:#5c6f85;
   --ink:#0e1a2b; --mist:#eef2f7; --line:#d6deea; --white:#ffffff;
-  --gold:#c79a58; --rose:#ba758c; --sky:#2f7dd8;
+  --gold:#c79a58; --rose:#ba758c; --sky:#2f7dd8; --error:#c0392b;
   --font-d:'Space Grotesk',system-ui,sans-serif; --font-b:'IBM Plex Sans',system-ui,sans-serif;
   --max:1180px; --r:14px;
 }
@@ -34,12 +34,16 @@ a{color:inherit;text-decoration:none}
 h1,h2,h3{font-family:var(--font-d);line-height:1.05;letter-spacing:-.02em;font-weight:600}
 .eyebrow{font-family:var(--font-d);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate-2);font-weight:500;display:flex;align-items:center;gap:10px}
 .eyebrow::before{content:"";width:22px;height:2px;background:var(--navy)}
-.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-d);font-weight:600;font-size:15px;padding:15px 24px;border-radius:10px;transition:transform .2s,background .2s,box-shadow .2s;border:1.5px solid transparent}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-d);font-weight:600;font-size:15px;padding:15px 24px;border-radius:10px;transition:transform .2s,background .2s,box-shadow .2s,color .2s,border-color .2s;border:1.5px solid transparent}
 .btn svg{width:18px;height:18px}
 .btn-primary{background:var(--navy);color:#fff;box-shadow:0 10px 30px -12px rgba(6,50,110,.6)}
 .btn-primary:hover{background:var(--navy-deep);transform:translateY(-2px)}
 .btn-ghost{border-color:var(--line);color:var(--navy);background:#fff}
 .btn-ghost:hover{border-color:var(--navy)}
+/* botao vazado sobre fundo escuro: no hover inverte para solido */
+.btn-dark{margin-top:28px;background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.btn-dark:hover,.btn-dark:focus-visible{background:#fff;color:var(--ink);border-color:#fff;transform:translateY(-2px);box-shadow:0 14px 34px -14px rgba(0,0,0,.6)}
+.btn-dark:active{transform:translateY(0)}
 :focus-visible{outline:3px solid var(--sky);outline-offset:3px}
 
 /* NAV */
@@ -55,7 +59,8 @@ h1,h2,h3{font-family:var(--font-d);line-height:1.05;letter-spacing:-.02em;font-w
 @media(max-width:880px){.nav ul{display:none}.nav .brand small{display:none}.nav .brand b{white-space:nowrap;font-size:13px}.nav .btn{padding:10px 14px;font-size:13px;white-space:nowrap}}
 
 /* HERO */
-.hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#fff 0%,var(--mist) 100%)}
+/* o hero controla o proprio respiro pelo .wrap: sem isso soma com o padding de section{} */
+.hero{position:relative;overflow:hidden;padding:0;background:linear-gradient(180deg,#fff 0%,var(--mist) 100%)}
 .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;min-height:calc(100vh - 74px);padding-top:64px;padding-bottom:64px}
 .hero h1{font-size:clamp(38px,4.6vw,64px);color:var(--navy);font-weight:700}
 .hero h1 em{font-style:normal;color:var(--slate-2);font-weight:500}
@@ -83,7 +88,7 @@ h1,h2,h3{font-family:var(--font-d);line-height:1.05;letter-spacing:-.02em;font-w
 .mod.m3{bottom:22%;left:-2%;animation-delay:2.8s}.mod.m3 i{background:var(--sky)}
 .mod.m4{bottom:6%;right:4%;animation-delay:3.05s}.mod.m4 i{background:var(--slate)}
 @keyframes pop{to{opacity:1;transform:none}}
-@media(max-width:880px){.hero .wrap{grid-template-columns:1fr;min-height:auto}.sig{max-width:360px;margin:0 auto}.mod{font-size:11px;padding:8px 10px}}
+@media(max-width:880px){.hero .wrap{grid-template-columns:1fr;min-height:auto;gap:36px;padding-top:32px;padding-bottom:48px}.sig{max-width:360px;margin:0 auto}.mod{font-size:11px;padding:8px 10px}}
 
 /* Section base */
 section{padding:104px 0}
@@ -178,6 +183,14 @@ section{padding:104px 0}
 .cta input,.cta select{width:100%;border:1px solid var(--line);border-radius:10px;padding:13px 14px;font:inherit;font-size:15px;margin-top:6px;background:#fff}
 .cta form .btn{justify-content:center;width:100%;margin-top:6px}
 .cta small{font-size:12px;color:var(--slate-2);text-align:center}
+.cta input[aria-invalid="true"],.cta select[aria-invalid="true"]{border-color:var(--error);background:#fdf6f5}
+.cta form p.err{display:flex;align-items:flex-start;gap:6px;margin:7px 0 0;max-width:none;font-size:13px;line-height:1.4;color:var(--error);font-weight:500}
+.cta form p.err[hidden]{display:none}
+.cta form p.err::before{content:"!";flex:0 0 16px;height:16px;margin-top:1px;border-radius:50%;background:var(--error);color:#fff;font-size:11px;font-weight:700;line-height:16px;text-align:center}
+.cta form p.form-status{margin:4px 0 0;max-width:none;font-size:13px;color:var(--navy);font-weight:500;text-align:center}
+.cta form p.form-status[hidden]{display:none}
+.cta form p.nojs{margin:10px 0 0;max-width:none;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.5;color:var(--slate);font-weight:400}
+.cta form p.nojs a{color:var(--navy);font-weight:600;text-decoration:underline}
 
 /* Footer */
 footer{background:var(--navy-deep);color:#9fb2cf;padding:48px 0;font-size:13px}
@@ -257,7 +270,7 @@ footer a:hover{color:#fff}
     </div>
     <div class="sig" aria-hidden="true">
       <svg class="core" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width=".6" stroke-dasharray="2 4"/><circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" stroke-width=".6"/></svg>
-      <svg class="mark" viewBox="170 420 365 360"><path d="M 254.67 549.29 Q 254.66 549.26 239.79 523.58 Q 238.71 521.71 239.43 518.93 A 0.93 0.91 -8.8 0 1 239.86 518.35 L 344.95 457.68 A 0.94 0.93 44.5 0 1 345.90 457.68 L 360.17 466.02 A 0.58 0.58 0.0 0 0 360.96 465.81 L 377.39 437.69 A 1.06 1.05 7.8 0 1 378.03 437.21 Q 380.04 436.73 381.03 437.30 Q 452.98 478.82 485.71 497.69 A 1.21 1.20 15.2 0 1 486.31 498.73 L 486.31 515.73 A 0.58 0.57 -90.0 0 0 486.88 516.31 L 520.87 516.31 A 0.55 0.55 0.0 0 1 521.42 516.86 L 521.42 640.56 A 1.20 1.18 75.5 0 1 520.82 641.60 L 506.19 650.05 A 0.41 0.40 -30.6 0 0 506.04 650.61 Q 515.34 666.47 521.11 676.66 Q 522.15 678.50 521.48 681.08 A 1.19 1.15 -8.4 0 1 520.92 681.81 L 415.97 742.41 A 1.03 1.01 -44.5 0 1 414.94 742.41 L 400.67 734.07 A 0.53 0.53 0.0 0 0 399.94 734.26 L 383.48 762.43 A 0.99 0.98 -81.6 0 1 382.87 762.89 Q 380.83 763.38 379.94 762.87 Q 303.46 718.73 275.39 702.55 A 1.66 1.64 15.4 0 1 274.57 701.13 L 274.57 684.38 A 0.58 0.57 -0.0 0 0 273.99 683.81 L 240.02 683.81 A 0.56 0.56 0.0 0 1 239.46 683.25 L 239.46 559.74 A 1.61 1.59 75.2 0 1 240.26 558.35 L 254.45 550.24 A 0.67 0.66 58.4 0 0 254.67 549.29 Z M 451.18 627.44 L 474.63 613.86 A 0.83 0.82 75.2 0 0 475.04 613.15 L 475.34 504.96 A 0.87 0.85 -75.4 0 0 474.91 504.20 L 382.79 451.26 A 0.43 0.43 0.0 0 0 382.20 451.42 L 370.64 471.50 A 0.53 0.53 0.0 0 0 370.82 472.22 L 449.96 518.12 A 1.37 1.37 0.0 0 1 450.64 519.31 L 450.78 627.21 A 0.27 0.27 0.0 0 0 451.18 627.44 Z M 439.66 552.74 L 439.69 525.64 A 0.83 0.82 15.4 0 0 439.28 524.93 L 345.85 470.36 A 0.87 0.85 44.8 0 0 344.98 470.35 L 252.95 523.45 A 0.43 0.43 0.0 0 0 252.79 524.04 L 264.35 544.12 A 0.53 0.53 0.0 0 0 265.07 544.32 L 344.50 498.91 A 1.37 1.37 0.0 0 1 345.87 498.92 L 439.26 552.97 A 0.27 0.27 0.0 0 0 439.66 552.74 Z M 368.94 525.09 L 345.47 511.54 A 0.83 0.82 -44.7 0 0 344.65 511.54 L 250.74 565.28 A 0.87 0.85 -15.3 0 0 250.30 566.02 L 250.39 672.27 A 0.43 0.43 0.0 0 0 250.82 672.71 L 273.99 672.71 A 0.53 0.53 0.0 0 0 274.52 672.18 L 274.81 580.69 A 1.37 1.37 0.0 0 1 275.50 579.51 L 368.94 525.55 A 0.27 0.27 0.0 0 0 368.94 525.09 Z M 391.61 675.13 L 415.13 688.72 A 0.83 0.82 -44.7 0 0 415.95 688.72 L 510.13 634.92 A 0.88 0.85 -15.3 0 0 510.57 634.17 L 510.55 527.66 A 0.43 0.43 0.0 0 0 510.12 527.23 L 486.89 527.21 A 0.53 0.53 0.0 0 0 486.36 527.74 L 486.01 619.45 A 1.38 1.37 75.5 0 1 485.31 620.63 L 391.61 674.67 A 0.27 0.27 0.0 0 0 391.61 675.13 Z M 350.72 548.79 Q 321.41 565.73 321.25 565.99 Q 321.10 566.26 321.11 600.11 Q 321.13 633.97 321.28 634.23 Q 321.44 634.50 350.76 651.41 Q 380.09 668.33 380.40 668.33 Q 380.70 668.33 410.01 651.39 Q 439.33 634.45 439.48 634.18 Q 439.63 633.91 439.62 600.06 Q 439.60 566.21 439.45 565.94 Q 439.29 565.67 409.97 548.76 Q 380.64 531.85 380.33 531.85 Q 380.03 531.85 350.72 548.79 Z M 309.71 572.59 L 286.25 586.15 A 0.83 0.82 75.3 0 0 285.84 586.86 L 285.49 695.07 A 0.87 0.85 -75.3 0 0 285.92 695.83 L 378.02 748.82 A 0.43 0.43 0.0 0 0 378.61 748.66 L 390.18 728.59 A 0.53 0.53 0.0 0 0 389.99 727.86 L 310.87 681.92 A 1.37 1.37 0.0 0 1 310.19 680.73 L 310.11 572.82 A 0.27 0.27 0.0 0 0 309.71 572.59 Z M 415.81 701.86 A 0.34 0.34 0.0 0 1 415.47 701.86 L 321.63 647.05 A 0.34 0.34 0.0 0 0 321.12 647.34 L 321.12 674.87 A 0.34 0.34 0.0 0 0 321.29 675.17 L 415.28 730.07 A 0.34 0.34 0.0 0 0 415.62 730.07 L 508.04 676.72 A 0.34 0.34 0.0 0 0 508.16 676.26 L 496.33 655.76 A 0.34 0.34 0.0 0 0 495.87 655.64 L 415.81 701.86 Z"/></svg>
+      <svg class="mark" viewBox="198 420 365 360"><path d="M 254.67 549.29 Q 254.66 549.26 239.79 523.58 Q 238.71 521.71 239.43 518.93 A 0.93 0.91 -8.8 0 1 239.86 518.35 L 344.95 457.68 A 0.94 0.93 44.5 0 1 345.90 457.68 L 360.17 466.02 A 0.58 0.58 0.0 0 0 360.96 465.81 L 377.39 437.69 A 1.06 1.05 7.8 0 1 378.03 437.21 Q 380.04 436.73 381.03 437.30 Q 452.98 478.82 485.71 497.69 A 1.21 1.20 15.2 0 1 486.31 498.73 L 486.31 515.73 A 0.58 0.57 -90.0 0 0 486.88 516.31 L 520.87 516.31 A 0.55 0.55 0.0 0 1 521.42 516.86 L 521.42 640.56 A 1.20 1.18 75.5 0 1 520.82 641.60 L 506.19 650.05 A 0.41 0.40 -30.6 0 0 506.04 650.61 Q 515.34 666.47 521.11 676.66 Q 522.15 678.50 521.48 681.08 A 1.19 1.15 -8.4 0 1 520.92 681.81 L 415.97 742.41 A 1.03 1.01 -44.5 0 1 414.94 742.41 L 400.67 734.07 A 0.53 0.53 0.0 0 0 399.94 734.26 L 383.48 762.43 A 0.99 0.98 -81.6 0 1 382.87 762.89 Q 380.83 763.38 379.94 762.87 Q 303.46 718.73 275.39 702.55 A 1.66 1.64 15.4 0 1 274.57 701.13 L 274.57 684.38 A 0.58 0.57 -0.0 0 0 273.99 683.81 L 240.02 683.81 A 0.56 0.56 0.0 0 1 239.46 683.25 L 239.46 559.74 A 1.61 1.59 75.2 0 1 240.26 558.35 L 254.45 550.24 A 0.67 0.66 58.4 0 0 254.67 549.29 Z M 451.18 627.44 L 474.63 613.86 A 0.83 0.82 75.2 0 0 475.04 613.15 L 475.34 504.96 A 0.87 0.85 -75.4 0 0 474.91 504.20 L 382.79 451.26 A 0.43 0.43 0.0 0 0 382.20 451.42 L 370.64 471.50 A 0.53 0.53 0.0 0 0 370.82 472.22 L 449.96 518.12 A 1.37 1.37 0.0 0 1 450.64 519.31 L 450.78 627.21 A 0.27 0.27 0.0 0 0 451.18 627.44 Z M 439.66 552.74 L 439.69 525.64 A 0.83 0.82 15.4 0 0 439.28 524.93 L 345.85 470.36 A 0.87 0.85 44.8 0 0 344.98 470.35 L 252.95 523.45 A 0.43 0.43 0.0 0 0 252.79 524.04 L 264.35 544.12 A 0.53 0.53 0.0 0 0 265.07 544.32 L 344.50 498.91 A 1.37 1.37 0.0 0 1 345.87 498.92 L 439.26 552.97 A 0.27 0.27 0.0 0 0 439.66 552.74 Z M 368.94 525.09 L 345.47 511.54 A 0.83 0.82 -44.7 0 0 344.65 511.54 L 250.74 565.28 A 0.87 0.85 -15.3 0 0 250.30 566.02 L 250.39 672.27 A 0.43 0.43 0.0 0 0 250.82 672.71 L 273.99 672.71 A 0.53 0.53 0.0 0 0 274.52 672.18 L 274.81 580.69 A 1.37 1.37 0.0 0 1 275.50 579.51 L 368.94 525.55 A 0.27 0.27 0.0 0 0 368.94 525.09 Z M 391.61 675.13 L 415.13 688.72 A 0.83 0.82 -44.7 0 0 415.95 688.72 L 510.13 634.92 A 0.88 0.85 -15.3 0 0 510.57 634.17 L 510.55 527.66 A 0.43 0.43 0.0 0 0 510.12 527.23 L 486.89 527.21 A 0.53 0.53 0.0 0 0 486.36 527.74 L 486.01 619.45 A 1.38 1.37 75.5 0 1 485.31 620.63 L 391.61 674.67 A 0.27 0.27 0.0 0 0 391.61 675.13 Z M 350.72 548.79 Q 321.41 565.73 321.25 565.99 Q 321.10 566.26 321.11 600.11 Q 321.13 633.97 321.28 634.23 Q 321.44 634.50 350.76 651.41 Q 380.09 668.33 380.40 668.33 Q 380.70 668.33 410.01 651.39 Q 439.33 634.45 439.48 634.18 Q 439.63 633.91 439.62 600.06 Q 439.60 566.21 439.45 565.94 Q 439.29 565.67 409.97 548.76 Q 380.64 531.85 380.33 531.85 Q 380.03 531.85 350.72 548.79 Z M 309.71 572.59 L 286.25 586.15 A 0.83 0.82 75.3 0 0 285.84 586.86 L 285.49 695.07 A 0.87 0.85 -75.3 0 0 285.92 695.83 L 378.02 748.82 A 0.43 0.43 0.0 0 0 378.61 748.66 L 390.18 728.59 A 0.53 0.53 0.0 0 0 389.99 727.86 L 310.87 681.92 A 1.37 1.37 0.0 0 1 310.19 680.73 L 310.11 572.82 A 0.27 0.27 0.0 0 0 309.71 572.59 Z M 415.81 701.86 A 0.34 0.34 0.0 0 1 415.47 701.86 L 321.63 647.05 A 0.34 0.34 0.0 0 0 321.12 647.34 L 321.12 674.87 A 0.34 0.34 0.0 0 0 321.29 675.17 L 415.28 730.07 A 0.34 0.34 0.0 0 0 415.62 730.07 L 508.04 676.72 A 0.34 0.34 0.0 0 0 508.16 676.26 L 496.33 655.76 A 0.34 0.34 0.0 0 0 495.87 655.64 L 415.81 701.86 Z"/></svg>
       <span class="mod m1"><i></i>Agenda</span>
       <span class="mod m2"><i></i>Comissões</span>
       <span class="mod m3"><i></i>Estoque</span>
@@ -379,7 +392,7 @@ footer a:hover{color:#fff}
       <div>
         <p class="eyebrow">Quem somos</p>
         <h2>Começou com clientes de verdade, não com um pitch.</h2>
-        <p>Arthur e Raiam já atendiam empresas de vários segmentos em Vitória que precisavam de um sistema que se adaptasse a elas. A cada problema resolvido, uma nova conexão. A cada conexão, a Conecta cresceu. Hoje a base atende do Espírito Santo a Portugal.</p>
+        <p>Arthur e Rayan já atendiam empresas de vários segmentos em Vitória que precisavam de um sistema que se adaptasse a elas. A cada problema resolvido, uma nova conexão. A cada conexão, a Conecta cresceu. Hoje a base atende do Espírito Santo a Portugal.</p>
         <span class="pill"><i></i>Vitória/ES</span><span class="pill"><i></i>Atuação nacional</span><span class="pill"><i></i>Clientes em Portugal</span>
       </div>
     </div>
@@ -393,16 +406,35 @@ footer a:hover{color:#fff}
       <p class="eyebrow" style="color:#8fa6c8">Próximo passo</p>
       <h2 style="margin-top:18px">Conte como o seu negócio funciona. A gente mostra o sistema que encaixa.</h2>
       <p>Diagnóstico sem compromisso. Se fizer sentido, você começa os 15 dias de teste com a implantação acompanhada.</p>
-      <a class="btn btn-ghost" style="margin-top:28px;background:transparent;color:#fff;border-color:rgba(255,255,255,.3)" href="https://wa.me/5527999073651?text=Ol%C3%A1%2C%20quero%20um%20diagn%C3%B3stico%20da%20Conecta" target="_blank" rel="noopener"><svg><use href="#wa"/></svg>Chamar no WhatsApp</a>
+      <a class="btn btn-dark" href="https://wa.me/5527999073651?text=Ol%C3%A1!%20Quero%20um%20diagn%C3%B3stico%20da%20Conecta." target="_blank" rel="noopener"><svg><use href="#wa"/></svg>Chamar no WhatsApp</a>
     </div>
     <form class="rv" id="lead" novalidate>
       <input type="text" name="site" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
-      <div><label for="n">Seu nome</label><input id="n" required placeholder="Como prefere ser chamado"></div>
-      <div><label for="w">WhatsApp</label><input id="w" required placeholder="(27) 9 0000-0000" inputmode="tel" pattern="[0-9()\s\-+]{10,20}"></div>
-      <div><label for="s">Tipo de negócio</label>
-        <select id="s"><option>Barbearia</option><option>Salão de beleza / estética</option><option>Outro segmento</option></select></div>
+      <div>
+        <label for="n">Seu nome</label>
+        <input id="n" name="nome" type="text" required autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="Como prefere ser chamado" aria-describedby="n-err">
+        <p class="err" id="n-err" hidden>Escreva o seu nome para a gente saber como chamar você.</p>
+      </div>
+      <div>
+        <label for="w">WhatsApp</label>
+        <input id="w" name="whatsapp" type="tel" required autocomplete="tel-national" inputmode="numeric" enterkeyhint="send" maxlength="16" placeholder="(27) 9 0000-0000" aria-describedby="w-err">
+        <p class="err" id="w-err" hidden>Informe um WhatsApp com DDD, no formato (00) 00000-0000.</p>
+      </div>
+      <div>
+        <label for="s">Tipo de negócio</label>
+        <select id="s" name="segmento">
+          <option data-msg="uma barbearia">Barbearia</option>
+          <option data-msg="um salão de beleza e estética">Salão de beleza / estética</option>
+          <option data-msg="um negócio de outro segmento">Outro segmento</option>
+        </select>
+      </div>
       <button class="btn btn-primary" type="submit">Pedir diagnóstico</button>
+      <p class="form-status" id="form-status" role="status" aria-live="polite" hidden></p>
       <small>Resposta em horário comercial, seg a sáb.</small>
+      <noscript>
+        <p class="nojs">O envio automático precisa de JavaScript. Fale com a gente direto no
+        <a href="https://wa.me/5527999073651?text=Ol%C3%A1!%20Quero%20falar%20com%20a%20equipe%20da%20Conecta." target="_blank" rel="noopener">nosso WhatsApp</a>.</p>
+      </noscript>
     </form>
   </div>
 </section>
@@ -416,7 +448,7 @@ footer a:hover{color:#fff}
   </div>
 </footer>
 
-<a class="fab" href="https://wa.me/5527999073651?text=Ol%C3%A1%2C%20quero%20um%20diagn%C3%B3stico%20da%20Conecta" target="_blank" rel="noopener" aria-label="Chamar no WhatsApp"><svg><use href="#wa"/></svg>WhatsApp</a>
+<a class="fab" href="https://wa.me/5527999073651?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20um%20diagn%C3%B3stico%20da%20Conecta." target="_blank" rel="noopener" aria-label="Chamar no WhatsApp"><svg><use href="#wa"/></svg>WhatsApp</a>
 
 <script>
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:0.05,rootMargin:'0px 0px -40px 0px'});
@@ -433,15 +465,33 @@ const rot=document.getElementById('rot'),words=['à sua barbearia','ao seu salã
 setInterval(()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;rot.classList.add('out');setTimeout(()=>{wi=(wi+1)%words.length;rot.textContent=words[wi];rot.classList.remove('out')},300)},2200);
 /* form: valida, mascara e abre WhatsApp com os dados (até ligar o webhook) */
 const form=document.getElementById('lead'),tel=document.getElementById('w');
+const nome=form.elements.nome,status=document.getElementById('form-status');
 tel.addEventListener('input',()=>{let v=tel.value.replace(/\D/g,'').slice(0,11);tel.value=v.length>6?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
+/* erro acessível: marca o campo, mostra o texto e deixa o leitor de tela anunciar */
+const erro=(campo,mostrar,texto)=>{const p=document.getElementById(campo.id+'-err');if(texto)p.textContent=texto;campo.setAttribute('aria-invalid',mostrar?'true':'false');p.hidden=!mostrar};
+/* nome: letras (com acento), espaco, hifen e apostrofo - numero nao e nome */
+const NOME_OK=/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’\- ]*[A-Za-zÀ-ÖØ-öø-ÿ]$/;
+const NOME_PROIBIDO=/[^A-Za-zÀ-ÖØ-öø-ÿ'’\- ]/g;
+/* bloqueia digito e simbolo no ato da digitacao (e na colagem), sem perder a posicao do cursor */
+nome.addEventListener('input',()=>{const v=nome.value,limpo=v.replace(NOME_PROIBIDO,'');
+ if(limpo!==v){const pos=Math.max(0,nome.selectionStart-(v.length-limpo.length));nome.value=limpo;nome.setSelectionRange(pos,pos);
+  erro(nome,true,'Use apenas letras no seu nome.');return}
+ if(nome.getAttribute('aria-invalid')==='true')erro(nome,false)});
+tel.addEventListener('input',()=>{if(tel.getAttribute('aria-invalid')==='true')erro(tel,false)});
 form.addEventListener('submit',e=>{e.preventDefault();if(form.site.value)return;
- const n=form.n.value.trim(),w=tel.value.replace(/\D/g,''),t=form.s.value;
- if(n.length<2){form.n.focus();form.n.style.borderColor='#c0392b';return}
- if(w.length<10){tel.focus();tel.style.borderColor='#c0392b';return}
- const msg=encodeURIComponent(`Olá, sou ${n}. Tenho um(a) ${t.toLowerCase()} e quero um diagnóstico da Conecta.`);
- form.querySelector('.btn').textContent='Abrindo o WhatsApp...';
+ const seg=form.elements.segmento;
+ const n=nome.value.trim(),w=tel.value.replace(/\D/g,'');
+ const nOk=NOME_OK.test(n),wOk=w.length>=10;
+ erro(nome,!nOk,n.length<2?'Escreva o seu nome para a gente saber como chamar você.':'Use apenas letras no seu nome.');
+ erro(tel,!wOk);
+ if(!nOk||!wOk){(nOk?tel:nome).focus();return}
+ /* o texto de cada segmento e escrito a mao no data-msg da <option>, nao concatenado */
+ const t=seg.options[seg.selectedIndex].dataset.msg;
+ const msg=encodeURIComponent(`Olá, sou ${n}. Tenho ${t} e quero um diagnóstico da Conecta. Meu WhatsApp: ${tel.value}.`);
+ const btn=form.querySelector('.btn');btn.textContent='Abrindo o WhatsApp...';
+ status.hidden=false;status.textContent='Abrindo o WhatsApp com a sua mensagem pronta.';
  window.open('https://wa.me/5527999073651?text='+msg,'_blank');
- setTimeout(()=>form.querySelector('.btn').textContent='Pedir diagnóstico',2500)});
+ setTimeout(()=>{btn.textContent='Pedir diagnóstico';status.hidden=true;status.textContent=''},2500)});
 /* mobile menu */
 const nav=document.querySelector('.nav'),bg=document.querySelector('.burger');
 bg.addEventListener('click',()=>{const o=nav.classList.toggle('open');bg.setAttribute('aria-expanded',o);bg.setAttribute('aria-label',o?'Fechar menu':'Abrir menu')});
