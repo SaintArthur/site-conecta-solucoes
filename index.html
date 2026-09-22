@@ -397,7 +397,7 @@ footer a:hover{color:#fff}
       <div>
         <label for="n">Seu nome</label>
         <input id="n" name="nome" type="text" required autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="Como prefere ser chamado" aria-describedby="n-err">
-        <p class="err" id="n-err" hidden>Escreva o seu nome para a gente saber como chamar você.</p>
+        <p class="err" id="n-err" hidden>Informe o seu nome.</p>
       </div>
       <div>
         <label for="w">WhatsApp</label>
@@ -460,7 +460,7 @@ form.addEventListener('submit',e=>{e.preventDefault();if(form.site.value)return;
  const seg=form.elements.segmento;
  const n=nome.value.trim(),w=tel.value.replace(/\D/g,'');
  const nOk=NOME_OK.test(n),wOk=w.length>=10;
- erro(nome,!nOk,n.length<2?'Escreva o seu nome para a gente saber como chamar você.':'Use apenas letras no seu nome.');
+ erro(nome,!nOk,n.length<2?'Informe o seu nome.':'Use apenas letras no seu nome.');
  erro(tel,!wOk);
  if(!nOk||!wOk){(nOk?tel:nome).focus();return}
  const t=seg.options[seg.selectedIndex].dataset.msg;
