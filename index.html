@@ -472,8 +472,11 @@ form.addEventListener('submit',e=>{e.preventDefault();if(form.site.value)return;
 const nav=document.querySelector('.nav'),bg=document.querySelector('.burger');
 bg.addEventListener('click',()=>{const o=nav.classList.toggle('open');bg.setAttribute('aria-expanded',o);bg.setAttribute('aria-label',o?'Fechar menu':'Abrir menu')});
 document.querySelectorAll('.mnav a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');bg.setAttribute('aria-expanded','false')}));
-const fab=document.querySelector('.fab'),hero=document.querySelector('.hero');
-new IntersectionObserver(([e])=>fab.classList.toggle('show',!e.isIntersecting&&e.boundingClientRect.top<0),{threshold:0}).observe(hero);
+const fab=document.querySelector('.fab'),hero=document.querySelector('.hero'),contato=document.getElementById('contato');
+let passouHero=false,noContato=false;
+const attFab=()=>fab.classList.toggle('show',passouHero&&!noContato);
+new IntersectionObserver(([e])=>{passouHero=!e.isIntersecting&&e.boundingClientRect.top<0;attFab()},{threshold:0}).observe(hero);
+new IntersectionObserver(([e])=>{noContato=e.isIntersecting;attFab()},{threshold:0}).observe(contato);
 const secs=[...document.querySelectorAll('main section[id]')],navLinks=[...document.querySelectorAll('.nav ul a')];
 new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe&&secs.forEach(x=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe(x));
 </script>
