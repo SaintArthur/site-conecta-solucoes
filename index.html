@@ -577,10 +577,10 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     },
     function maquina(c,k){                        /* máquina de corte: barbearia */
       c.scale(k,k);
-      c.beginPath();c.roundRect(33,30,34,52,7);c.fill();          /* corpo */
-      c.beginPath();c.roundRect(30,18,40,11,3);c.fill();          /* cabeça */
-      for(let i=0;i<7;i++){c.beginPath();c.rect(32+i*5.4,11,3,8);c.fill()}  /* dentes */
-      c.beginPath();c.roundRect(39,84,22,6,3);c.fill();           /* base */
+      c.beginPath();c.moveTo(34,26);c.lineTo(66,26);c.lineTo(62,74);c.lineTo(38,74);c.closePath();c.fill();  /* corpo afunilado */
+      for(let i=0;i<8;i++){c.beginPath();c.moveTo(33+i*4.8,24);c.lineTo(36+i*4.8,24);c.lineTo(35.5+i*4.8,13);c.lineTo(33.5+i*4.8,13);c.closePath();c.fill()}
+      c.lineCap='round';c.lineJoin='round';c.strokeStyle=c.fillStyle;c.lineWidth=5;
+      c.beginPath();c.moveTo(50,74);c.bezierCurveTo(50,86,70,84,72,94);c.stroke();  /* fio: o que a distingue */
     },
     function tesoura(c,k){                        /* tesoura: salão */
       c.scale(k,k);c.lineCap='round';c.lineWidth=7;c.strokeStyle=c.fillStyle;
@@ -590,39 +590,44 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
       c.beginPath();c.arc(33,76,12,0,7);c.stroke();
       c.beginPath();c.arc(67,76,12,0,7);c.stroke();
     },
-    function esmalte(c,k){                        /* esmalte: unha e maquiagem */
+    function batom(c,k){                          /* batom: estética e maquiagem */
       c.scale(k,k);
-      c.beginPath();c.roundRect(34,38,32,48,8);c.fill();          /* vidro */
-      c.beginPath();c.roundRect(42,16,16,20,4);c.fill();          /* tampa */
-      c.beginPath();c.rect(47,34,6,6);c.fill();                   /* gargalo */
-      c.beginPath();c.roundRect(38,88,24,5,2.5);c.fill();
+      c.beginPath();c.moveTo(40,40);c.lineTo(60,40);c.lineTo(60,20);c.lineTo(52,8);c.lineTo(40,14);c.closePath();c.fill();  /* ponta chanfrada */
+      c.beginPath();c.rect(38,40,24,8);c.fill();                 /* anel */
+      c.beginPath();c.roundRect(40,48,20,44,4);c.fill();          /* tubo */
     },
-    function predio(c,k){                         /* prédio: sob medida */
-      c.scale(k,k);
-      c.beginPath();c.roundRect(28,24,44,64,4);c.fill();
+    function maleta(c,k){                         /* maleta: empresa, sob medida */
+      c.scale(k,k);c.lineCap='round';c.lineJoin='round';c.strokeStyle=c.fillStyle;
+      c.lineWidth=6;
+      c.beginPath();c.moveTo(38,32);c.lineTo(38,22);c.lineTo(62,22);c.lineTo(62,32);c.stroke();  /* alça */
+      c.beginPath();c.roundRect(18,32,64,46,6);c.fill();
       c.globalCompositeOperation='destination-out';
-      for(let l=0;l<4;l++)for(let col=0;col<3;col++){
-        c.beginPath();c.rect(35+col*12,32+l*14,7,8);c.fill();
-      }
+      c.beginPath();c.rect(44,48,12,14);c.fill();                 /* fecho vazado */
       c.globalCompositeOperation='source-over';
-      c.beginPath();c.roundRect(20,88,60,6,3);c.fill();
     },
   ];
 
-  /* Rasteriza uma forma e escolhe N pontos onde há tinta, com passo constante.
-     Sorteio puro reparte mal: repete pixel, deixa buraco e forma aglomerado —
-     é o que tirava a definição da silhueta. */
+  /* Rasteriza a forma e distribui os pontos por uma grade com deslocamento
+     aleatório dentro de cada célula. Passo constante sobre a varredura punha
+     pontos vizinhos lado a lado: eles se empilhavam, formavam grumo e a borda
+     saía serrilhada. Grade dá espaçamento parelho; o jitter tira a cara de
+     papel quadriculado. */
   const amostrar=(fn)=>{
     const off=document.createElement('canvas');off.width=off.height=L;
     const c=off.getContext('2d');c.fillStyle='#000';c.save();fn(c,L/100);c.restore();
-    const d=c.getImageData(0,0,L,L).data,tinta=[];
-    for(let y=0;y<L;y++)for(let x=0;x<L;x++)if(d[(y*L+x)*4+3]>110)tinta.push(x,y);
-    const total=tinta.length/2,pts=new Float32Array(N*2);
-    if(!total)return pts;
-    for(let i=0;i<N;i++){
-      const j=(Math.floor(i*total/N))*2;
-      pts[i*2]=tinta[j];pts[i*2+1]=tinta[j+1];
+    const d=c.getImageData(0,0,L,L).data;
+    const tem=(x,y)=>x>=0&&y>=0&&x<L&&y<L&&d[((y|0)*L+(x|0))*4+3]>110;
+    let area=0;for(let i=3;i<d.length;i+=4)if(d[i]>110)area++;
+    const g=Math.max(Math.sqrt(area/N),1.05);           /* passo da grade */
+    const bruto=[];
+    for(let y=g/2;y<L;y+=g)for(let x=g/2;x<L;x+=g){
+      if(!tem(x,y))continue;
+      const jx=x+(Math.random()-.5)*g*.8,jy=y+(Math.random()-.5)*g*.8;
+      bruto.push(tem(jx,jy)?jx:x,tem(jx,jy)?jy:y);
     }
+    const total=bruto.length/2,pts=new Float32Array(N*2);
+    if(!total)return pts;
+    for(let i=0;i<N;i++){const j=(Math.floor(i*total/N))*2;pts[i*2]=bruto[j];pts[i*2+1]=bruto[j+1]}
     return pts;
   };
 
@@ -641,18 +646,25 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
 
   const suave=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 
-  /* Um Path2D com os ~1900 círculos e UM fill só. Um fill por ponto custaria
-     caro; quadrado em posição fracionária o navegador suaviza e vira borrão. */
+  /* Raio e opacidade variam por partícula, fixos por índice para não piscar.
+     Ponto todo igual estampa chapada; a variação dá textura. */
+  const raio=new Float32Array(N),tom=new Float32Array(N);
+  for(let i=0;i<N;i++){raio[i]=.62+Math.random()*.55;tom[i]=.55+Math.random()*.45}
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
-    const e=lado/L*dpr,r=Math.max(1.5*dpr,1.6),TAU=6.2832;
+    const e=lado/L*dpr,base=Math.max(1.45*dpr,1.5),TAU=6.2832;
     ctx.clearRect(0,0,cv.width,cv.height);
-    const caminho=new Path2D();
-    for(let i=0;i<N;i++){
-      const x=px[i*2]*e,y=px[i*2+1]*e;
-      caminho.moveTo(x+r,y);caminho.arc(x,y,r,0,TAU);
+    /* três faixas de opacidade: um fill por faixa, não um por ponto */
+    for(let f=0;f<3;f++){
+      const cam=new Path2D();
+      for(let i=0;i<N;i++){
+        if((tom[i]*3|0)!==f)continue;
+        const x=px[i*2]*e,y=px[i*2+1]*e,r=base*raio[i];
+        cam.moveTo(x+r,y);cam.arc(x,y,r,0,TAU);
+      }
+      ctx.fillStyle='rgba(6,50,110,'+(.45+f*.275).toFixed(3)+')';
+      ctx.fill(cam);
     }
-    ctx.fillStyle='#06326e';ctx.fill(caminho);
   };
 
   const quadro=(agora)=>{
