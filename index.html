@@ -176,7 +176,9 @@ section{padding:104px 0}
 
 /* Partículas: a marca se desfaz e vira a ferramenta de cada segmento.
    Canvas porque não existe equivalente em CSS para morfar nuvem de pontos. */
-.a3d-part{position:absolute;left:50%;top:50%;width:86%;aspect-ratio:1;
+/* Medido pela ALTURA: o painel é 4:3, então 86% da largura dava um quadrado
+   mais alto que ele, e o overflow:hidden cortava topo e base das formas. */
+.a3d-part{position:absolute;left:50%;top:50%;height:92%;aspect-ratio:1;width:auto;
   transform:translate3d(-50%,-50%,10px)}
 .a3d-hex{position:absolute;left:50%;top:50%;width:52%;aspect-ratio:365/360;color:var(--navy);
   transform:translate3d(-50%,-50%,10px);filter:drop-shadow(0 26px 30px rgba(6,50,110,.24))}
@@ -639,14 +641,18 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
 
   const suave=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 
-  /* fillRect em vez de arc: com ~1900 pontos por quadro, um arco por ponto
-     custa caro e a esta escala o quadradinho lê igual. */
+  /* Um Path2D com os ~1900 círculos e UM fill só. Um fill por ponto custaria
+     caro; quadrado em posição fracionária o navegador suaviza e vira borrão. */
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
-    const e=lado/L*dpr,s=Math.max(1.7*dpr,2),m=s/2;
+    const e=lado/L*dpr,r=Math.max(1.5*dpr,1.6),TAU=6.2832;
     ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.fillStyle='#06326e';
-    for(let i=0;i<N;i++)ctx.fillRect(px[i*2]*e-m,px[i*2+1]*e-m,s,s);
+    const caminho=new Path2D();
+    for(let i=0;i<N;i++){
+      const x=px[i*2]*e,y=px[i*2+1]*e;
+      caminho.moveTo(x+r,y);caminho.arc(x,y,r,0,TAU);
+    }
+    ctx.fillStyle='#06326e';ctx.fill(caminho);
   };
 
   const quadro=(agora)=>{
