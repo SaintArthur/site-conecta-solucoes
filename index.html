@@ -656,24 +656,33 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
 
   const suave=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 
-  /* Raio e opacidade variam por partícula, fixos por índice para não piscar.
-     Ponto todo igual estampa chapada; a variação dá textura. */
+  /* Duas camadas. As partículas existem para o trânsito; parada, quem aparece
+     é a figura vetorial, com o mesmo traço limpo do logo. A troca entre as
+     duas é um crossfade — é o que tira o aspecto pixelado do estado final. */
   const raio=new Float32Array(N),tom=new Float32Array(N);
   for(let i=0;i<N;i++){raio[i]=.62+Math.random()*.55;tom[i]=.55+Math.random()*.45}
+  let alfaVetor=1;
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
-    const e=lado/L*dpr,base=Math.max(1.45*dpr,1.5),TAU=6.2832;
     ctx.clearRect(0,0,cv.width,cv.height);
-    /* três faixas de opacidade: um fill por faixa, não um por ponto */
-    for(let f=0;f<3;f++){
-      const cam=new Path2D();
-      for(let i=0;i<N;i++){
-        if((tom[i]*3|0)!==f)continue;
-        const x=px[i*2]*e,y=px[i*2+1]*e,r=base*raio[i];
-        cam.moveTo(x+r,y);cam.arc(x,y,r,0,TAU);
+    const ap=1-alfaVetor;
+    if(ap>.005){
+      const e=lado/L*dpr,base=Math.max(1.45*dpr,1.5),TAU=6.2832;
+      for(let f=0;f<3;f++){
+        const cam=new Path2D();
+        for(let i=0;i<N;i++){
+          if((tom[i]*3|0)!==f)continue;
+          const x=px[i*2]*e,y=px[i*2+1]*e,r=base*raio[i];
+          cam.moveTo(x+r,y);cam.arc(x,y,r,0,TAU);
+        }
+        ctx.fillStyle='rgba(6,50,110,'+((.45+f*.275)*ap).toFixed(3)+')';
+        ctx.fill(cam);
       }
-      ctx.fillStyle='rgba(6,50,110,'+(.45+f*.275).toFixed(3)+')';
-      ctx.fill(cam);
+    }
+    if(alfaVetor>.005){
+      ctx.save();ctx.globalAlpha=alfaVetor;ctx.fillStyle='#06326e';
+      formas[atual](ctx,lado/100*dpr);
+      ctx.restore();
     }
   };
 
@@ -681,11 +690,15 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     if(!vivo)return;
     const dt=agora-marca;
     if(fase==='segura'){
+      /* nítido no miolo da pausa, pontilhado nas pontas, para a partícula
+         só aparecer quando realmente está viajando */
+      alfaVetor=Math.max(0,Math.min(1,dt/300,(SEGURA-dt)/260));
       if(dt>=SEGURA){
         ini.set(px);atual=(atual+1)%formas.length;fim.set(nuvens[atual]);
         fase='morfa';marca=agora;
       }
     }else{
+      alfaVetor=0;
       const janela=MORFA*(1-ATRASO);let fim_=true;
       for(let i=0;i<N;i++){
         let t=(dt-atr[i]*MORFA)/janela;
