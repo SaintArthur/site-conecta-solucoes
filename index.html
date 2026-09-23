@@ -174,6 +174,8 @@ section{padding:104px 0}
 /* Marca d'água ao fundo. Sem viewBox no <svg>: o símbolo #hex já traz o dele,
    e um viewBox por fora cria coordenada aninhada que some com o desenho. */
 
+.a3d-col{display:flex;flex-direction:column;gap:14px}
+.a3d-legenda{font-size:13.5px;line-height:1.45;color:var(--slate-2);text-align:center;max-width:280px;margin:0 auto;font-weight:300}
 /* Partículas: a marca se desfaz e vira a ferramenta de cada segmento.
    Canvas porque não existe equivalente em CSS para morfar nuvem de pontos. */
 /* Medido pela ALTURA: o painel é 4:3, então 86% da largura dava um quadrado
@@ -409,14 +411,17 @@ footer a:hover{color:#fff}
 <section class="founders" id="quem">
   <div class="wrap">
     <div class="box rv">
-      <div class="a3d" aria-hidden="true">
+      <div class="a3d-col">
+        <div class="a3d" aria-hidden="true">
         <div class="a3d-cena">
           <div class="a3d-flut">
             <svg class="a3d-anel" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 4"/></svg>
             <svg class="a3d-hex"><use href="#hex"/></svg>
             <canvas class="a3d-part"></canvas>
+            </div>
           </div>
         </div>
+        <p class="a3d-legenda">Cada negócio tem sua própria forma de funcionar.</p>
       </div>
       <div>
         <p class="eyebrow">Quem somos</p>
@@ -575,14 +580,6 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
       const p=new Path2D(dHex.getAttribute('d')),e=86/326.1;
       c.translate(50*k,50*k);c.scale(k*e,k*e);c.translate(-380.4,-600.1);c.fill(p);
     },
-    function navalha(c,k){                        /* navalha: barbearia */
-      c.scale(k,k);c.lineJoin='round';
-      c.beginPath();c.moveTo(12,88);c.lineTo(20,94);c.lineTo(56,60);c.lineTo(48,54);c.closePath();c.fill();   /* cabo */
-      c.beginPath();c.moveTo(48,50);c.lineTo(58,60);c.lineTo(92,34);c.lineTo(94,14);c.lineTo(74,20);c.closePath();c.fill();  /* lamina */
-      c.globalCompositeOperation='destination-out';
-      c.beginPath();c.arc(52,55,3.2,0,7);c.fill();                /* pino vazado */
-      c.globalCompositeOperation='source-over';
-    },
     function tesoura(c,k){                        /* tesoura: salão */
       c.scale(k,k);c.lineCap='round';c.lineWidth=7;c.strokeStyle=c.fillStyle;
       c.beginPath();c.moveTo(30,14);c.lineTo(62,62);c.stroke();
@@ -597,16 +594,18 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
       c.beginPath();c.rect(38,40,24,8);c.fill();                 /* anel */
       c.beginPath();c.roundRect(40,48,20,44,4);c.fill();          /* tubo */
     },
-    function engrenagem(c,k){                     /* engrenagem: sob medida */
+    function sacola(c,k){                         /* sacola: SaaS de varejo */
+      c.scale(k,k);c.lineCap='round';c.strokeStyle=c.fillStyle;c.lineWidth=5.5;
+      c.beginPath();c.arc(50,36,14,Math.PI,0);c.stroke();          /* alça */
+      c.beginPath();c.moveTo(24,36);c.lineTo(76,36);c.lineTo(82,90);c.lineTo(18,90);c.closePath();c.fill();
+    },
+    function lampada(c,k){                        /* lâmpada: a ideia */
       c.scale(k,k);
-      for(let i=0;i<8;i++){
-        c.save();c.translate(50,50);c.rotate(i*Math.PI/4);
-        c.beginPath();c.roundRect(-8,-42,16,20,3.5);c.fill();
-        c.restore();
-      }
-      c.beginPath();c.arc(50,50,28,0,7);c.fill();
+      c.beginPath();c.arc(50,40,25,0,7);c.fill();                  /* bulbo */
+      c.beginPath();c.moveTo(37,57);c.lineTo(63,57);c.lineTo(59,73);c.lineTo(41,73);c.closePath();c.fill();
+      c.beginPath();c.roundRect(40,73,20,17,3);c.fill();            /* rosca */
       c.globalCompositeOperation='destination-out';
-      c.beginPath();c.arc(50,50,12,0,7);c.fill();
+      for(let i=0;i<2;i++){c.beginPath();c.rect(40,77+i*6,20,2.6);c.fill()}
       c.globalCompositeOperation='source-over';
     },
   ];
