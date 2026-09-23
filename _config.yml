@@ -1,0 +1,7 @@
+# O GitHub Pages monta este site com Jekyll e serve todo arquivo do repositório.
+# Sem esta exclusão, as anotações internas ficariam públicas em
+# conectasolucoes.ia.br/PENDENCIAS.md — que é exatamente o tipo de vazamento que
+# o limpador de comentários dos outros dois sites existe para impedir.
+exclude:
+  - PENDENCIAS.md
+  - .claude
