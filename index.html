@@ -664,7 +664,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     const ang=Math.random()*6.2832,f=.35+Math.random()*.65;
     dsx[i]=Math.cos(ang)*f;dsy[i]=Math.sin(ang)*f;
   }
-  const DISPERSA=58;   /* quanto a nuvem abre no meio da travessia: abaixo de ~50 ela embaça mas ainda desenha a silhueta */
+  const DISPERSA=48,MARGEM=44;  /* MARGEM: folga no mapeamento para a nuvem aberta nao bater na borda e ser cortada */   /* quanto a nuvem abre no meio da travessia: abaixo de ~50 ela embaça mas ainda desenha a silhueta */
 
   let lado=0,dpr=1;
   const medir=()=>{
@@ -684,16 +684,19 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
     ctx.clearRect(0,0,cv.width,cv.height);
+    /* tudo desenha no mesmo espaco de L+2*MARGEM, para particula e vetor
+       ficarem alinhados e a nuvem ter folga nas beiradas */
+    const ESC=lado/(L+2*MARGEM)*dpr;
     const anterior=(atual+formas.length-1)%formas.length;
     const cor=misturar(cores[anterior],cores[atual],passagem);
     const ap=1-alfaVetor;
     if(ap>.005){
-      const e=lado/L*dpr,base=Math.max(.95*dpr,1),TAU=6.2832;
+      const e=ESC,off=MARGEM*ESC,base=Math.max(.95*dpr,1),TAU=6.2832;
       for(let f=0;f<3;f++){
         const cam=new Path2D();
         for(let i=0;i<N;i++){
           if((tom[i]*3|0)!==f)continue;
-          const x=px[i*2]*e,y=px[i*2+1]*e,r=base*raio[i];
+          const x=px[i*2]*e+off,y=px[i*2+1]*e+off,r=base*raio[i];
           cam.moveTo(x+r,y);cam.arc(x,y,r,0,TAU);
         }
         ctx.fillStyle='rgba('+cor[0]+','+cor[1]+','+cor[2]+','+((.45+f*.275)*ap).toFixed(3)+')';
@@ -702,7 +705,8 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     }
     if(alfaVetor>.005){
       ctx.save();ctx.globalAlpha=alfaVetor;ctx.fillStyle='rgb('+cor[0]+','+cor[1]+','+cor[2]+')';
-      formas[atual](ctx,lado/100*dpr);
+      ctx.translate(MARGEM*ESC,MARGEM*ESC);
+      formas[atual](ctx,ESC*L/100);
       ctx.restore();
     }
   };
