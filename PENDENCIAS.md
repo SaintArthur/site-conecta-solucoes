@@ -1,6 +1,7 @@
 # Pendências — site institucional da Conecta
 
 Levantado em 23/09/2026. Números conferidos por contagem no `index.html` desta data.
+Itens 1 a 3 **resolvidos em 23/09/2026**.
 
 > Este arquivo está no `exclude` do `_config.yml`. O GitHub Pages serve todo arquivo
 > do repositório — sem essa exclusão, estas anotações ficariam públicas em
@@ -8,38 +9,37 @@ Levantado em 23/09/2026. Números conferidos por contagem no `index.html` desta 
 
 ---
 
-## 1. Os três "15 dias" — e um deles NÃO é implantação
+## 1. Os "15 dias" — teste e implantação → 7 dias ✅ RESOLVIDO
 
-Esta é a pendência que exige decisão antes de qualquer edição. O trial dos produtos
-passou de 15 para 7 dias. Aqui aparecem três menções a 15 dias, e elas **não são a
-mesma coisa**:
+O trial dos produtos passou de 15 para 7 dias. Havia **4** menções (não 3 — a linha
+405 não estava no levantamento original) e todas foram trocadas para 7 dias.
 
-| Linha | Texto | O que é |
-|---|---|---|
-| 290 | "**15 dias** de implantação guiada" | implantação |
-| 326 | "Implantação em **15 dias**" | implantação |
-| 445 | "você começa os **15 dias de teste** com a implantação acompanhada" | **teste** |
+**Decisão (23/09/2026):** a implantação também passou a 7 dias, junto com o teste.
 
-A linha 445 fala de teste, não de implantação — ela está errada hoje e deve virar
-7 dias junto com os outros sites.
+| Linha | Antes | Depois | O que é |
+|---|---|---|---|
+| 290 | "15 dias de implantação guiada" | 7 dias | implantação |
+| 326 | "Implantação em 15 dias" | 7 dias | implantação |
+| 405 | "Os 15 primeiros dias são guiados" | 7 primeiros dias | implantação |
+| 445 | "os 15 dias de teste" | 7 dias de teste | teste |
 
-As linhas 290 e 326 são prazo de implantação, que é outra coisa. **Decidir:** a
-implantação também passou a 7 dias, ou continua 15?
+Obs.: "15 barbearias já rodando" (hero) é contagem de clientes, não prazo — mantido.
 
-## 2. Sem aviso de privacidade (LGPD)
+## 2. Aviso de privacidade (LGPD) ✅ RESOLVIDO
 
-O formulário coleta nome e WhatsApp e não há nenhuma menção a privacidade ou LGPD
-no arquivo (0 ocorrências de "LGPD" ou "privacidade"). Vale para os três sites.
+Adicionado aviso no rodapé do formulário. O texto reflete a implementação real: o
+form não guarda dados em servidor — ele só monta a mensagem e abre o `wa.me`. Vale
+rever o mesmo texto nos outros dois sites (lá o envio pode ser diferente).
 
-## 3. Conferir o número de WhatsApp
+## 3. Número de WhatsApp ✅ CONFIRMADO
 
-São 4 links para `wa.me/5527999073651`. Nos sites do Barber e do Bella o número é
-outro — `5527999941710` — anotado por lá como número pessoal do Matheus, a ser
-trocado pelo comercial. **Confirmar** se o daqui é o comercial correto.
+Os 4 links usam `wa.me/5527999073651`. **Confirmado como o comercial correto** da
+Conecta (23/09/2026) — mantido. Não confundir com `5527999941710`, que nos sites do
+Barber e do Bella é o número pessoal do Matheus, ainda a trocar por lá.
 
 ---
 
-## Nos outros repositórios
+## Nos outros repositórios (ainda em aberto)
 
 - **site-cs-bella** — 23 ocorrências ainda dizendo 15 dias, e a contradição do "grátis".
 - **site-cs-barber** — trial já corrigido; sobra a contradição do "grátis".
