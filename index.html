@@ -594,14 +594,14 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
       c.beginPath();c.rect(36,42,28,7);c.fill();                   /* anel */
       c.beginPath();c.roundRect(38,49,24,44,4);c.fill();            /* tubo */
     },
-    function etiqueta(c,k){                       /* etiqueta: SaaS de varejo */
-      c.scale(k,k);c.lineJoin='round';
-      c.beginPath();
-      c.moveTo(50,10);c.lineTo(90,50);c.lineTo(52,88);c.lineTo(12,48);c.lineTo(12,14);
-      c.quadraticCurveTo(12,10,16,10);c.closePath();c.fill();
+    function balanca(c,k){                        /* balança: varejo e açougue */
+      c.scale(k,k);
+      c.beginPath();c.roundRect(9,27,82,13,6);c.fill();             /* prato */
+      c.beginPath();c.moveTo(26,40);c.lineTo(74,40);c.lineTo(82,80);c.lineTo(18,80);c.closePath();c.fill();
       c.globalCompositeOperation='destination-out';
-      c.beginPath();c.arc(29,27,7,0,7);c.fill();                   /* furo do cordão */
+      c.beginPath();c.roundRect(35,52,30,17,3);c.fill();            /* visor */
       c.globalCompositeOperation='source-over';
+      c.beginPath();c.roundRect(13,80,74,9,4);c.fill();             /* base */
     },
     function lampada(c,k){                        /* lâmpada: a ideia */
       c.scale(k,k);
@@ -648,11 +648,23 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     return pts;
   };
 
+  const vr=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const hx=s=>{const v=s.replace('#','');return [parseInt(v.slice(0,2),16),parseInt(v.slice(2,4),16),parseInt(v.slice(4,6),16)]};
+  /* a cor segue o produto: marca, Barber, Bella, varejo e a ideia */
+  const cores=[vr('--navy'),vr('--gold'),vr('--rose'),vr('--sky'),vr('--gold')].map(hx);
+  const misturar=(a,b,t)=>[0,1,2].map(i=>Math.round(a[i]+(b[i]-a[i])*t));
+
   const nuvens=formas.map(amostrar);
   let atual=0,fase='segura',marca=performance.now(),vivo=false;
   const px=new Float32Array(N*2),ini=new Float32Array(N*2),fim=new Float32Array(N*2),atr=new Float32Array(N);
   px.set(nuvens[0]);fim.set(nuvens[0]);
-  for(let i=0;i<N;i++)atr[i]=Math.random()*ATRASO;
+  const dsx=new Float32Array(N),dsy=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    atr[i]=Math.random()*ATRASO;
+    const ang=Math.random()*6.2832,f=.35+Math.random()*.65;
+    dsx[i]=Math.cos(ang)*f;dsy[i]=Math.sin(ang)*f;
+  }
+  const DISPERSA=58;   /* quanto a nuvem abre no meio da travessia: abaixo de ~50 ela embaça mas ainda desenha a silhueta */
 
   let lado=0,dpr=1;
   const medir=()=>{
@@ -668,10 +680,12 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
      duas é um crossfade — é o que tira o aspecto pixelado do estado final. */
   const raio=new Float32Array(N),tom=new Float32Array(N);
   for(let i=0;i<N;i++){raio[i]=.62+Math.random()*.55;tom[i]=.55+Math.random()*.45}
-  let alfaVetor=1;
+  let alfaVetor=1,passagem=1;
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
     ctx.clearRect(0,0,cv.width,cv.height);
+    const anterior=(atual+formas.length-1)%formas.length;
+    const cor=misturar(cores[anterior],cores[atual],passagem);
     const ap=1-alfaVetor;
     if(ap>.005){
       const e=lado/L*dpr,base=Math.max(.95*dpr,1),TAU=6.2832;
@@ -682,12 +696,12 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
           const x=px[i*2]*e,y=px[i*2+1]*e,r=base*raio[i];
           cam.moveTo(x+r,y);cam.arc(x,y,r,0,TAU);
         }
-        ctx.fillStyle='rgba(6,50,110,'+((.45+f*.275)*ap).toFixed(3)+')';
+        ctx.fillStyle='rgba('+cor[0]+','+cor[1]+','+cor[2]+','+((.45+f*.275)*ap).toFixed(3)+')';
         ctx.fill(cam);
       }
     }
     if(alfaVetor>.005){
-      ctx.save();ctx.globalAlpha=alfaVetor;ctx.fillStyle='#06326e';
+      ctx.save();ctx.globalAlpha=alfaVetor;ctx.fillStyle='rgb('+cor[0]+','+cor[1]+','+cor[2]+')';
       formas[atual](ctx,lado/100*dpr);
       ctx.restore();
     }
@@ -699,7 +713,10 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     if(fase==='segura'){
       /* nítido no miolo da pausa, pontilhado nas pontas, para a partícula
          só aparecer quando realmente está viajando */
-      alfaVetor=Math.max(0,Math.min(1,dt/300,(SEGURA-dt)/260));
+      /* a morfagem ja entregou o vetor em 1; recomecar do zero aqui deixava
+         300ms com a figura montada ainda em poeira */
+      alfaVetor=Math.max(0,Math.min(1,(SEGURA-dt)/260));
+      passagem=1;
       if(dt>=SEGURA){
         ini.set(px);atual=(atual+1)%formas.length;fim.set(nuvens[atual]);
         fase='morfa';marca=agora;
@@ -710,13 +727,17 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
          nuvem parecer virar o desenho em vez de ser trocada por ele. */
       const mp=Math.min(1,dt/MORFA);
       alfaVetor=mp<.62?0:suave((mp-.62)/.38);
+      passagem=mp;
       const janela=MORFA*(1-ATRASO);let fim_=true;
       for(let i=0;i<N;i++){
         let t=(dt-atr[i]*MORFA)/janela;
         if(t<0){t=0;fim_=false}else if(t<1){fim_=false}else t=1;
         const s=suave(t);
-        px[i*2]=ini[i*2]+(fim[i*2]-ini[i*2])*s;
-        px[i*2+1]=ini[i*2+1]+(fim[i*2+1]-ini[i*2+1])*s;
+        /* abre no meio da travessia: sem isso a nuvem continua desenhando a
+           silhueta durante o percurso, e a forma aparece antes da hora */
+        const d=Math.sin(Math.PI*t)*DISPERSA;
+        px[i*2]=ini[i*2]+(fim[i*2]-ini[i*2])*s+dsx[i]*d;
+        px[i*2+1]=ini[i*2+1]+(fim[i*2+1]-ini[i*2+1])*s+dsy[i]*d;
       }
       if(fim_){fase='segura';marca=agora}
     }
