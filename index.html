@@ -173,29 +173,26 @@ section{padding:104px 0}
 @keyframes a3d-flutua{from{transform:translate3d(0,-6px,0)}to{transform:translate3d(0,10px,0)}}
 /* Marca d'água ao fundo. Sem viewBox no <svg>: o símbolo #hex já traz o dele,
    e um viewBox por fora cria coordenada aninhada que some com o desenho. */
-.a3d-marca{position:absolute;left:50%;top:50%;width:76%;aspect-ratio:365/360;color:var(--navy);opacity:.06;
-  transform:translate3d(-50%,-50%,-80px) rotate(-8deg)}
+
 /* Partículas: a marca se desfaz e vira a ferramenta de cada segmento.
    Canvas porque não existe equivalente em CSS para morfar nuvem de pontos. */
 .a3d-part{position:absolute;left:50%;top:50%;width:86%;aspect-ratio:1;
   transform:translate3d(-50%,-50%,10px)}
 .a3d-hex{position:absolute;left:50%;top:50%;width:52%;aspect-ratio:365/360;color:var(--navy);
   transform:translate3d(-50%,-50%,10px);filter:drop-shadow(0 26px 30px rgba(6,50,110,.24))}
-.a3d-anel{position:absolute;left:50%;top:50%;width:84%;aspect-ratio:1;color:var(--navy);opacity:.18;
+.a3d-anel{position:absolute;left:50%;top:50%;width:88%;aspect-ratio:1;color:var(--navy);opacity:.12;
   transform:translate3d(-50%,-50%,-40px)}
 /* Sem partículas (JS desligado ou menos movimento), o hexágono estático fica. */
 .a3d.animando .a3d-hex{display:none}
-.a3d-mod{position:absolute;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
-  border-radius:10px;padding:8px 12px;font-family:var(--font-d);font-size:12px;font-weight:600;color:var(--navy);
-  box-shadow:0 14px 30px -14px rgba(6,50,110,.4);white-space:nowrap}
-.a3d-mod i{width:8px;height:8px;border-radius:2px;display:block}
-.a3d-mod.p1{top:12%;left:4%;transform:translateZ(70px)}
-.a3d-mod.p1 i{background:var(--gold)}
-.a3d-mod.p2{top:34%;right:2%;transform:translateZ(46px)}
-.a3d-mod.p2 i{background:var(--rose)}
-.a3d-mod.p3{bottom:14%;left:8%;transform:translateZ(54px)}
-.a3d-mod.p3 i{background:var(--sky)}
-@media(max-width:880px){.a3d-mod{font-size:11px;padding:7px 10px}}
+
+
+
+
+
+
+
+
+
 @media(prefers-reduced-motion:reduce){.a3d-flut{animation:none}}
 
 .cta{background:var(--ink);color:#fff;position:relative;overflow:hidden}
@@ -413,11 +410,9 @@ footer a:hover{color:#fff}
       <div class="a3d" aria-hidden="true">
         <div class="a3d-cena">
           <div class="a3d-flut">
-            <svg class="a3d-marca"><use href="#hex"/></svg>
-            <svg class="a3d-anel" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 4"/><circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" stroke-width=".5"/></svg>
+            <svg class="a3d-anel" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 4"/></svg>
             <svg class="a3d-hex"><use href="#hex"/></svg>
             <canvas class="a3d-part"></canvas>
-            <span class="a3d-mod p2"><i></i>Sob medida</span>
           </div>
         </div>
       </div>
@@ -566,7 +561,10 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   const dHex=document.querySelector('#hex path');
   if(!dHex||!window.Path2D)return;
 
-  const L=200,N=560,SEGURA=1500,MORFA=900,ATRASO=.35;
+  /* SEGURA bem maior que MORFA de propósito: a forma montada é o que comunica,
+     o trânsito é só a passagem. Com 1500/900 a cena passava 37% do tempo
+     desfeita, e qualquer olhada rápida pegava pontos espalhados. */
+  const L=260,N=innerWidth<700?1100:1900,SEGURA=2200,MORFA=800,ATRASO=.35;
   const ctx=cv.getContext('2d');
 
   /* Cada forma desenha em um quadrado de 100x100; k leva para a resolução de amostragem. */
@@ -609,14 +607,20 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     },
   ];
 
-  /* Rasteriza uma forma e sorteia N pontos onde há tinta. */
+  /* Rasteriza uma forma e escolhe N pontos onde há tinta, com passo constante.
+     Sorteio puro reparte mal: repete pixel, deixa buraco e forma aglomerado —
+     é o que tirava a definição da silhueta. */
   const amostrar=(fn)=>{
     const off=document.createElement('canvas');off.width=off.height=L;
     const c=off.getContext('2d');c.fillStyle='#000';c.save();fn(c,L/100);c.restore();
     const d=c.getImageData(0,0,L,L).data,tinta=[];
-    for(let y=0;y<L;y+=2)for(let x=0;x<L;x+=2)if(d[(y*L+x)*4+3]>110)tinta.push(x,y);
-    const pts=new Float32Array(N*2),total=tinta.length/2;
-    for(let i=0;i<N;i++){const j=((Math.random()*total)|0)*2;pts[i*2]=tinta[j];pts[i*2+1]=tinta[j+1]}
+    for(let y=0;y<L;y++)for(let x=0;x<L;x++)if(d[(y*L+x)*4+3]>110)tinta.push(x,y);
+    const total=tinta.length/2,pts=new Float32Array(N*2);
+    if(!total)return pts;
+    for(let i=0;i<N;i++){
+      const j=(Math.floor(i*total/N))*2;
+      pts[i*2]=tinta[j];pts[i*2+1]=tinta[j+1];
+    }
     return pts;
   };
 
@@ -635,14 +639,14 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
 
   const suave=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 
+  /* fillRect em vez de arc: com ~1900 pontos por quadro, um arco por ponto
+     custa caro e a esta escala o quadradinho lê igual. */
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
-    const e=lado/L*dpr,r=1.15*dpr;
+    const e=lado/L*dpr,s=Math.max(1.7*dpr,2),m=s/2;
     ctx.clearRect(0,0,cv.width,cv.height);
     ctx.fillStyle='#06326e';
-    for(let i=0;i<N;i++){
-      ctx.beginPath();ctx.arc(px[i*2]*e,px[i*2+1]*e,r,0,6.2832);ctx.fill();
-    }
+    for(let i=0;i<N;i++)ctx.fillRect(px[i*2]*e-m,px[i*2+1]*e-m,s,s);
   };
 
   const quadro=(agora)=>{
