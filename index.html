@@ -566,7 +566,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   /* SEGURA bem maior que MORFA de propósito: a forma montada é o que comunica,
      o trânsito é só a passagem. Com 1500/900 a cena passava 37% do tempo
      desfeita, e qualquer olhada rápida pegava pontos espalhados. */
-  const L=260,N=innerWidth<700?1100:1900,SEGURA=2200,MORFA=800,ATRASO=.35;
+  const L=260,N=innerWidth<700?1600:2600,SEGURA=2200,MORFA=950,ATRASO=.5;
   const ctx=cv.getContext('2d');
 
   /* Cada forma desenha em um quadrado de 100x100; k leva para a resolução de amostragem. */
@@ -575,12 +575,13 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
       const p=new Path2D(dHex.getAttribute('d')),e=86/326.1;
       c.translate(50*k,50*k);c.scale(k*e,k*e);c.translate(-380.4,-600.1);c.fill(p);
     },
-    function maquina(c,k){                        /* máquina de corte: barbearia */
-      c.scale(k,k);
-      c.beginPath();c.moveTo(34,26);c.lineTo(66,26);c.lineTo(62,74);c.lineTo(38,74);c.closePath();c.fill();  /* corpo afunilado */
-      for(let i=0;i<8;i++){c.beginPath();c.moveTo(33+i*4.8,27);c.lineTo(36+i*4.8,27);c.lineTo(35.5+i*4.8,13);c.lineTo(33.5+i*4.8,13);c.closePath();c.fill()}  /* 27 e nao 24: precisa invadir o corpo, senao sobra vao */
-      c.lineCap='round';c.lineJoin='round';c.strokeStyle=c.fillStyle;c.lineWidth=5;
-      c.beginPath();c.moveTo(50,74);c.bezierCurveTo(50,86,70,84,72,94);c.stroke();  /* fio: o que a distingue */
+    function navalha(c,k){                        /* navalha: barbearia */
+      c.scale(k,k);c.lineJoin='round';
+      c.beginPath();c.moveTo(12,88);c.lineTo(20,94);c.lineTo(56,60);c.lineTo(48,54);c.closePath();c.fill();   /* cabo */
+      c.beginPath();c.moveTo(48,50);c.lineTo(58,60);c.lineTo(92,34);c.lineTo(94,14);c.lineTo(74,20);c.closePath();c.fill();  /* lamina */
+      c.globalCompositeOperation='destination-out';
+      c.beginPath();c.arc(52,55,3.2,0,7);c.fill();                /* pino vazado */
+      c.globalCompositeOperation='source-over';
     },
     function tesoura(c,k){                        /* tesoura: salão */
       c.scale(k,k);c.lineCap='round';c.lineWidth=7;c.strokeStyle=c.fillStyle;
@@ -596,13 +597,16 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
       c.beginPath();c.rect(38,40,24,8);c.fill();                 /* anel */
       c.beginPath();c.roundRect(40,48,20,44,4);c.fill();          /* tubo */
     },
-    function maleta(c,k){                         /* maleta: empresa, sob medida */
-      c.scale(k,k);c.lineCap='round';c.lineJoin='round';c.strokeStyle=c.fillStyle;
-      c.lineWidth=6;
-      c.beginPath();c.moveTo(38,32);c.lineTo(38,22);c.lineTo(62,22);c.lineTo(62,32);c.stroke();  /* alça */
-      c.beginPath();c.roundRect(18,32,64,46,6);c.fill();
+    function engrenagem(c,k){                     /* engrenagem: sob medida */
+      c.scale(k,k);
+      for(let i=0;i<8;i++){
+        c.save();c.translate(50,50);c.rotate(i*Math.PI/4);
+        c.beginPath();c.roundRect(-8,-42,16,20,3.5);c.fill();
+        c.restore();
+      }
+      c.beginPath();c.arc(50,50,28,0,7);c.fill();
       c.globalCompositeOperation='destination-out';
-      c.beginPath();c.rect(44,48,12,14);c.fill();                 /* fecho vazado */
+      c.beginPath();c.arc(50,50,12,0,7);c.fill();
       c.globalCompositeOperation='source-over';
     },
   ];
@@ -667,7 +671,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     ctx.clearRect(0,0,cv.width,cv.height);
     const ap=1-alfaVetor;
     if(ap>.005){
-      const e=lado/L*dpr,base=Math.max(1.45*dpr,1.5),TAU=6.2832;
+      const e=lado/L*dpr,base=Math.max(.95*dpr,1),TAU=6.2832;
       for(let f=0;f<3;f++){
         const cam=new Path2D();
         for(let i=0;i<N;i++){
@@ -698,7 +702,11 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
         fase='morfa';marca=agora;
       }
     }else{
-      alfaVetor=0;
+      /* O vetor comeca a surgir com a morfagem em 62%: as ultimas particulas
+         ainda estao chegando quando o traco ja aparece, e e isso que faz a
+         nuvem parecer virar o desenho em vez de ser trocada por ele. */
+      const mp=Math.min(1,dt/MORFA);
+      alfaVetor=mp<.62?0:suave((mp-.62)/.38);
       const janela=MORFA*(1-ATRASO);let fim_=true;
       for(let i=0;i<N;i++){
         let t=(dt-atr[i]*MORFA)/janela;
