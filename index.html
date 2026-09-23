@@ -175,18 +175,12 @@ section{padding:104px 0}
    e um viewBox por fora cria coordenada aninhada que some com o desenho. */
 .a3d-marca{position:absolute;left:50%;top:50%;width:76%;aspect-ratio:365/360;color:var(--navy);opacity:.06;
   transform:translate3d(-50%,-50%,-80px) rotate(-8deg)}
-/* Cartão da empresa: dado real, não forma abstrata. */
-.a3d-card{position:absolute;left:50%;top:50%;width:80%;transform:translate3d(-50%,-50%,0);
-  background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;
-  box-shadow:0 30px 50px -28px rgba(6,50,110,.45)}
-.a3d-card-topo{display:flex;align-items:center;gap:9px;padding-bottom:12px;border-bottom:1px solid var(--line)}
-.a3d-card-topo svg{width:24px;height:24px;color:var(--navy);flex:none}
-.a3d-card-topo b{display:block;font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--navy)}
-.a3d-card-topo small{display:block;font-size:7.5px;letter-spacing:.2em;color:var(--slate-2);font-weight:500}
-.a3d-card dl{margin-top:11px;display:grid;gap:8px}
-.a3d-card dt{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-2);font-weight:500}
-.a3d-card dd{font-size:11.5px;color:var(--ink);margin-top:1px;font-weight:500}
-.a3d-card dd.mono{font-family:var(--font-d);letter-spacing:.02em}
+/* Hexágono em primeiro plano: o desenho da marca, sem viewBox no <svg>
+   externo — o símbolo #hex já traz o dele. */
+.a3d-hex{position:absolute;left:50%;top:50%;width:52%;aspect-ratio:365/360;color:var(--navy);
+  transform:translate3d(-50%,-50%,10px);filter:drop-shadow(0 26px 30px rgba(6,50,110,.24))}
+.a3d-anel{position:absolute;left:50%;top:50%;width:84%;aspect-ratio:1;color:var(--navy);opacity:.18;
+  transform:translate3d(-50%,-50%,-40px)}
 .a3d-mod{position:absolute;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
   border-radius:10px;padding:8px 12px;font-family:var(--font-d);font-size:12px;font-weight:600;color:var(--navy);
   box-shadow:0 14px 30px -14px rgba(6,50,110,.4);white-space:nowrap}
@@ -412,24 +406,15 @@ footer a:hover{color:#fff}
 <section class="founders" id="quem">
   <div class="wrap">
     <div class="box rv">
-      <div class="a3d">
+      <div class="a3d" aria-hidden="true">
         <div class="a3d-cena">
           <div class="a3d-flut">
-            <svg class="a3d-marca" aria-hidden="true"><use href="#hex"/></svg>
-            <div class="a3d-card">
-              <div class="a3d-card-topo">
-                <svg aria-hidden="true"><use href="#hex"/></svg>
-                <span><b>CONECTA SOLUÇÕES</b><small>INOVAÇÃO EM MOVIMENTO</small></span>
-              </div>
-              <dl>
-                <div><dt>Razão social</dt><dd>Conecta Soluções e Serviços LTDA</dd></div>
-                <div><dt>CNPJ</dt><dd class="mono">66.965.509/0001-87</dd></div>
-                <div><dt>Sede</dt><dd>Vitória · Espírito Santo</dd></div>
-              </dl>
-            </div>
-            <span class="a3d-mod p1" aria-hidden="true"><i></i>Agenda</span>
-            <span class="a3d-mod p2" aria-hidden="true"><i></i>Comissões</span>
-            <span class="a3d-mod p3" aria-hidden="true"><i></i>Relatórios</span>
+            <svg class="a3d-marca"><use href="#hex"/></svg>
+            <svg class="a3d-anel" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 4"/><circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" stroke-width=".5"/></svg>
+            <svg class="a3d-hex"><use href="#hex"/></svg>
+            <span class="a3d-mod p1"><i></i>Agenda</span>
+            <span class="a3d-mod p2"><i></i>Comissões</span>
+            <span class="a3d-mod p3"><i></i>Relatórios</span>
           </div>
         </div>
       </div>
