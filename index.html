@@ -578,7 +578,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     function maquina(c,k){                        /* máquina de corte: barbearia */
       c.scale(k,k);
       c.beginPath();c.moveTo(34,26);c.lineTo(66,26);c.lineTo(62,74);c.lineTo(38,74);c.closePath();c.fill();  /* corpo afunilado */
-      for(let i=0;i<8;i++){c.beginPath();c.moveTo(33+i*4.8,24);c.lineTo(36+i*4.8,24);c.lineTo(35.5+i*4.8,13);c.lineTo(33.5+i*4.8,13);c.closePath();c.fill()}
+      for(let i=0;i<8;i++){c.beginPath();c.moveTo(33+i*4.8,27);c.lineTo(36+i*4.8,27);c.lineTo(35.5+i*4.8,13);c.lineTo(33.5+i*4.8,13);c.closePath();c.fill()}  /* 27 e nao 24: precisa invadir o corpo, senao sobra vao */
       c.lineCap='round';c.lineJoin='round';c.strokeStyle=c.fillStyle;c.lineWidth=5;
       c.beginPath();c.moveTo(50,74);c.bezierCurveTo(50,86,70,84,72,94);c.stroke();  /* fio: o que a distingue */
     },
@@ -617,17 +617,27 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     const c=off.getContext('2d');c.fillStyle='#000';c.save();fn(c,L/100);c.restore();
     const d=c.getImageData(0,0,L,L).data;
     const tem=(x,y)=>x>=0&&y>=0&&x<L&&y<L&&d[((y|0)*L+(x|0))*4+3]>110;
+    /* Pixels de borda: tinta com pelo menos um vizinho vazio. Sem isso o
+       contorno fica esfarrapado — o interior enche e a silhueta nao fecha. */
+    const borda=[];
+    for(let y=1;y<L-1;y++)for(let x=1;x<L-1;x++){
+      if(!tem(x,y))continue;
+      if(!tem(x-1,y)||!tem(x+1,y)||!tem(x,y-1)||!tem(x,y+1))borda.push(x,y);
+    }
     let area=0;for(let i=3;i<d.length;i+=4)if(d[i]>110)area++;
-    const g=Math.max(Math.sqrt(area/N),1.05);           /* passo da grade */
+    const NB=Math.min(Math.round(N*.38),borda.length/2|0),NI=N-NB;
+    /* interior: grade com jitter, sobreamostrada para nao faltar candidato */
+    const g=Math.max(Math.sqrt(area/(NI*1.7)),.9);
     const bruto=[];
     for(let y=g/2;y<L;y+=g)for(let x=g/2;x<L;x+=g){
       if(!tem(x,y))continue;
       const jx=x+(Math.random()-.5)*g*.8,jy=y+(Math.random()-.5)*g*.8;
-      bruto.push(tem(jx,jy)?jx:x,tem(jx,jy)?jy:y);
+      const ok=tem(jx,jy);bruto.push(ok?jx:x,ok?jy:y);
     }
-    const total=bruto.length/2,pts=new Float32Array(N*2);
-    if(!total)return pts;
-    for(let i=0;i<N;i++){const j=(Math.floor(i*total/N))*2;pts[i*2]=bruto[j];pts[i*2+1]=bruto[j+1]}
+    const pts=new Float32Array(N*2);
+    const ti=bruto.length/2,tb=borda.length/2;
+    for(let i=0;i<NI;i++){const j=ti?(Math.floor(i*ti/NI))*2:0;pts[i*2]=bruto[j]||0;pts[i*2+1]=bruto[j+1]||0}
+    for(let i=0;i<NB;i++){const j=(Math.floor(i*tb/NB))*2,k=(NI+i)*2;pts[k]=borda[j];pts[k+1]=borda[j+1]}
     return pts;
   };
 
