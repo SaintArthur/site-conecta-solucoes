@@ -750,15 +750,21 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     requestAnimationFrame(quadro);
   };
 
-  /* Só gasta quadro com a seção na tela. */
+  /* Parado = figura vetorial limpa, nunca a nuvem de pontos. Sair da tela no
+     meio da travessia congelava o quadro atual — e como o quadro podia ser um
+     estado disperso, ficava o "esboço" de poeira preso ali. Ao repousar,
+     assenta na forma atual como vetor: assim qualquer estado parado é limpo. */
+  const repousa=()=>{fase='segura';passagem=1;alfaVetor=1;px.set(nuvens[atual]);desenhar()};
+
+  /* Só gasta quadro com a seção na tela; ao sair, assenta no vetor limpo. */
   new IntersectionObserver(([e])=>{
-    if(e.isIntersecting&&!vivo){vivo=true;marca=performance.now();requestAnimationFrame(quadro)}
-    else if(!e.isIntersecting)vivo=false;
+    if(e.isIntersecting){if(!vivo){vivo=true;marca=performance.now();requestAnimationFrame(quadro)}}
+    else if(vivo){vivo=false;repousa()}
   },{threshold:.15}).observe(palco);
 
   addEventListener('resize',()=>{lado=0},{passive:true});
   palco.classList.add('animando');
-  medir();desenhar();
+  medir();repousa();
 })();
 </script>
 </body>
