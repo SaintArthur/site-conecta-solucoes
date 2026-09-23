@@ -160,7 +160,33 @@ section{padding:104px 0}
 .founders p.claim b{color:var(--navy);font-weight:600}
 .founders .pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:13px;color:var(--navy);font-weight:500;margin:18px 8px 0 0}
 .founders .pill i{width:8px;height:8px;border-radius:50%;background:var(--gold);display:block}
-.photo-slot{aspect-ratio:4/3;border-radius:16px;background:repeating-linear-gradient(135deg,var(--mist) 0 14px,#e6ecf4 14px 28px);display:flex;align-items:center;justify-content:center;color:var(--slate-2);font-size:13px;text-align:center;padding:20px;border:1px dashed var(--line)}
+/* Painel da marca no lugar da foto. Profundidade de verdade: perspective no
+   palco, translateZ nas camadas. A cena inclina pelo ponteiro (JS) e o miolo
+   flutua sozinho (CSS) — dois elementos separados para os dois transforms
+   não brigarem pelo mesmo atributo. */
+.a3d{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;border:1px solid var(--line);
+  background:radial-gradient(120% 100% at 30% 15%,#fff 0%,var(--mist) 60%,#e6ecf4 100%);
+  perspective:900px}
+.a3d-cena{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.a3d-flut{position:absolute;inset:0;transform-style:preserve-3d;
+  animation:a3d-flutua 9s cubic-bezier(.45,0,.55,1) infinite alternate}
+@keyframes a3d-flutua{from{transform:translate3d(0,-6px,0)}to{transform:translate3d(0,10px,0)}}
+.a3d-hex{position:absolute;left:50%;top:50%;width:46%;color:var(--navy)}
+.a3d-hex.h-fundo{transform:translate3d(-50%,-50%,-90px) scale(1.7);opacity:.07}
+.a3d-hex.h-meio{transform:translate3d(-50%,-50%,-30px) scale(1.18);opacity:.14}
+.a3d-hex.h-frente{transform:translate3d(-50%,-50%,20px);opacity:1;filter:drop-shadow(0 24px 28px rgba(6,50,110,.22))}
+.a3d-mod{position:absolute;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:8px 12px;font-family:var(--font-d);font-size:12px;font-weight:600;color:var(--navy);
+  box-shadow:0 14px 30px -14px rgba(6,50,110,.4);white-space:nowrap}
+.a3d-mod i{width:8px;height:8px;border-radius:2px;display:block}
+.a3d-mod.p1{top:12%;left:4%;transform:translateZ(70px)}
+.a3d-mod.p1 i{background:var(--gold)}
+.a3d-mod.p2{top:34%;right:2%;transform:translateZ(46px)}
+.a3d-mod.p2 i{background:var(--rose)}
+.a3d-mod.p3{bottom:14%;left:8%;transform:translateZ(54px)}
+.a3d-mod.p3 i{background:var(--sky)}
+@media(max-width:880px){.a3d-mod{font-size:11px;padding:7px 10px}}
+@media(prefers-reduced-motion:reduce){.a3d-flut{animation:none}}
 
 .cta{background:var(--ink);color:#fff;position:relative;overflow:hidden}
 .cta .deco{position:absolute;right:-6%;top:-20%;width:48%;color:var(--navy);opacity:.7;pointer-events:none}
@@ -374,7 +400,18 @@ footer a:hover{color:#fff}
 <section class="founders" id="quem">
   <div class="wrap">
     <div class="box rv">
-      <div class="photo-slot">Foto dos fundadores<br>(aguardando pasta de materiais)</div>
+      <div class="a3d" aria-hidden="true">
+        <div class="a3d-cena">
+          <div class="a3d-flut">
+            <svg class="a3d-hex h-fundo" viewBox="170 420 365 360"><use href="#hex"/></svg>
+            <svg class="a3d-hex h-meio" viewBox="170 420 365 360"><use href="#hex"/></svg>
+            <svg class="a3d-hex h-frente" viewBox="170 420 365 360"><use href="#hex"/></svg>
+            <span class="a3d-mod p1"><i></i>Agenda</span>
+            <span class="a3d-mod p2"><i></i>Comissões</span>
+            <span class="a3d-mod p3"><i></i>Relatórios</span>
+          </div>
+        </div>
+      </div>
       <div>
         <p class="eyebrow">Quem somos</p>
         <h2>Não é o cliente que se adapta ao sistema. É o sistema que se adapta ao cliente.</h2>
@@ -484,6 +521,30 @@ new IntersectionObserver(([e])=>{passouHero=!e.isIntersecting&&e.boundingClientR
 new IntersectionObserver(([e])=>{noContato=e.isIntersecting;attFab()},{threshold:0}).observe(contato);
 const secs=[...document.querySelectorAll('main section[id]')],navLinks=[...document.querySelectorAll('.nav ul a')];
 new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe&&secs.forEach(x=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe(x));
+
+/* inclinação do painel da marca: a cena persegue o ponteiro com amortecimento.
+   Só com mouse de verdade — em toque o :hover é falso — e nunca com
+   prefers-reduced-motion. O laço para sozinho quando a cena assenta. */
+(()=>{
+  const palco=document.querySelector('.a3d'),cena=document.querySelector('.a3d-cena');
+  if(!palco||!cena)return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+  let alvoX=0,alvoY=0,x=0,y=0,rodando=false;
+  const passo=()=>{
+    x+=(alvoX-x)*.08;y+=(alvoY-y)*.08;
+    cena.style.transform=`rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
+    if(Math.abs(alvoX-x)>.01||Math.abs(alvoY-y)>.01)requestAnimationFrame(passo);else rodando=false;
+  };
+  const acorda=()=>{if(!rodando){rodando=true;requestAnimationFrame(passo)}};
+  palco.addEventListener('pointermove',e=>{
+    const r=palco.getBoundingClientRect();
+    alvoX=((e.clientX-r.left)/r.width-.5)*18;
+    alvoY=-((e.clientY-r.top)/r.height-.5)*14;
+    acorda();
+  });
+  palco.addEventListener('pointerleave',()=>{alvoX=0;alvoY=0;acorda()});
+})();
 </script>
 </body>
 </html>
