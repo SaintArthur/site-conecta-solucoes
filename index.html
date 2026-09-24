@@ -151,7 +151,9 @@ section{padding:104px 0}
 .why .it h3{font-size:18px;color:var(--navy);margin-bottom:8px}
 .why .it p{font-size:14px;color:var(--slate)}
 
-.founders{background:#fff;padding-top:0}
+/* A seção começa colada na caixa (sem padding em cima): o link do menu a
+   parava atrás do menu fixo, com o título coberto. */
+.founders{background:#fff;padding-top:0;scroll-margin-top:92px}
 .founders .box{display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:center;border:1px solid var(--line);border-radius:24px;padding:48px;background:linear-gradient(135deg,#fff,var(--mist))}
 @media(max-width:880px){.founders .box{grid-template-columns:1fr;padding:22px}.founders .a3d-col{order:2;margin-top:8px}}
 /* As colunas do grid podem encolher abaixo do conteúdo. Sem isso a linha de
@@ -623,6 +625,16 @@ cells.forEach(c=>{c.tabIndex=0;c.setAttribute('role','switch');c.setAttribute('a
 setInterval(()=>{if(touched)return;const on=cells.filter(c=>c.classList.contains('on')),off=cells.filter(c=>c.classList.contains('off'));const a=on[Math.floor(Math.random()*on.length)],b=off[Math.floor(Math.random()*off.length)];[a,b].forEach(c=>{c.classList.toggle('on');c.classList.toggle('off');c.setAttribute('aria-checked',c.classList.contains('on'))});upd()},2200);
 
 const rot=document.getElementById('rot'),words=['à sua barbearia','ao seu salão','à sua clínica','à sua loja','à sua oficina','ao seu negócio'];let wi=0;
+/* O título reserva a altura da palavra mais longa. Sem isso ele ganhava ou
+   perdia uma linha a cada troca e tudo abaixo pulava 40-67px: os links do
+   menu paravam no meio da seção e, no iPhone (o Safari não compensa com
+   scroll anchoring), o texto que a pessoa lia saía do lugar. Remede só
+   quando a largura muda: a barra do navegador no celular dispara resize a
+   cada rolagem, e medir seis palavras ali travaria o scroll. */
+const tituloRot=rot.closest('h1');let largRot=0;
+const reservaRot=()=>{if(innerWidth===largRot)return;largRot=innerWidth;const atual=rot.textContent;tituloRot.style.minHeight='';let m=0;for(const w of words){rot.textContent=w;m=Math.max(m,tituloRot.offsetHeight)}rot.textContent=atual;tituloRot.style.minHeight=m+'px'};
+reservaRot();addEventListener('resize',()=>requestAnimationFrame(reservaRot),{passive:true});
+if(document.fonts)document.fonts.ready.then(()=>{largRot=0;reservaRot()});
 setInterval(()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;rot.classList.add('out');setTimeout(()=>{wi=(wi+1)%words.length;rot.textContent=words[wi];rot.classList.remove('out')},300)},2200);
 const form=document.getElementById('lead'),tel=document.getElementById('w');
 const nome=form.elements.nome,status=document.getElementById('form-status');
