@@ -222,8 +222,10 @@ section{padding:104px 0}
 .a3d-fundo.bella{background:radial-gradient(80% 60% at 50% 42%,rgba(186,117,140,.22) 0%,rgba(186,117,140,0) 64%),linear-gradient(180deg,#fff 0%,#fbf5f6 55%,#f3dfe6 100%)}
 .a3d:not([data-tema]) .a3d-fundo.conecta,.a3d[data-tema="conecta"] .a3d-fundo.conecta,.a3d[data-tema="barber"] .a3d-fundo.barber,.a3d[data-tema="bella"] .a3d-fundo.bella{opacity:1}
 .a3d[data-tema="bella"]{border-color:#ecdade}
-.a3d[data-tema="barber"] .a3d-anel{color:#e2ca97;opacity:.26}
-.a3d[data-tema="bella"] .a3d-anel{color:#ba758c;opacity:.4}
+.a3d[data-tema="barber"] .a3d-halo{color:#e2ca97;opacity:.14}
+.a3d[data-tema="barber"] .a3d-selo{color:#e2ca97;opacity:.08}
+.a3d[data-tema="bella"] .a3d-halo{color:#ba758c;opacity:.14}
+.a3d[data-tema="bella"] .a3d-selo{color:#ba758c;opacity:.10}
 .a3d::after{content:"";position:absolute;inset:-40% -30%;pointer-events:none;
   background:linear-gradient(112deg,transparent 42%,rgba(255,255,255,.045) 50%,transparent 58%);
   animation:a3d-varre 11s ease-in-out infinite alternate}
@@ -251,11 +253,39 @@ section{padding:104px 0}
   transform:translate3d(-50%,-50%,10px)}
 .a3d-hex{position:absolute;left:50%;top:50%;width:52%;aspect-ratio:365/360;color:#e6edf8;
   transform:translate3d(-50%,-50%,10px);filter:drop-shadow(0 22px 34px rgba(0,0,0,.45))}
-.a3d-anel{position:absolute;left:50%;top:50%;width:88%;width:min(88%,96cqh);aspect-ratio:1;color:#9fc0ff;opacity:.28;
-  transform:translate3d(-50%,-50%,-40px);transition:color .95s,opacity .95s}
 .a3d-part{z-index:1}
 /* Sem partículas (JS desligado ou menos movimento), o hexágono estático fica. */
 .a3d.animando .a3d-hex{display:none}
+/* Painel em 3D pelo scroll. O próprio .a3d gira — perspective() dentro da
+   função, sem wrapper e sem depender de contexto 3D de ancestral (o
+   translateY do reveal no .box não entra na conta) — guiado por --rx/--ry,
+   em graus, que o JS escreve uma vez por quadro. A cena interna repete o
+   giro num eco de .6: como cada camada está num translateZ diferente, é
+   esse eco que faz a paralaxe (halo e anel grande ao fundo deslizam mais; o
+   canvas, quase no vidro, quase nada). Sem JS tudo vale 0 e o card fica
+   plano. Safari: quem recorta (.a3d, overflow+radius) nunca é preserve-3d e
+   tem camada própria (will-change+transform) — é assim que o WebKit aplica
+   o recorte arredondado aos filhos compostos; a cadeia preserve-3d
+   (.a3d-cena > .a3d-flut) só carrega transform, sem overflow/opacity/filter. */
+.a3d{--rx:0;--ry:0;--sheen:0;will-change:transform;
+  transform:perspective(1100px) rotateX(calc(var(--rx)*1deg)) rotateY(calc(var(--ry)*1deg))}
+.a3d-cena{transform:rotateX(calc(var(--rx)*.6deg)) rotateY(calc(var(--ry)*.6deg))}
+/* Camadas de fundo, para a paralaxe ter o que mostrar: um halo difuso lá
+   atrás e a marca d'água — o hexágono da casa, grande, quase transparente e
+   deslocado para o canto, como o deco do CTA. Entram no lugar dos anéis
+   tracejados, que destoavam do sistema. Nada com aresta perto das quinas: o
+   halo é gradiente até zero e o hexágono é recortado antes delas. O halo usa
+   currentColor para a cor do tema entrar em transição. */
+.a3d-halo{position:absolute;left:50%;top:50%;width:80%;aspect-ratio:1;border-radius:50%;pointer-events:none;color:#9fc0ff;opacity:.18;
+  background:radial-gradient(closest-side,currentColor,transparent);transform:translate3d(-50%,-50%,-150px);transition:color .95s,opacity .95s}
+.a3d-selo{position:absolute;left:60%;top:56%;width:min(84%,104cqh);aspect-ratio:365/360;color:#9fc0ff;opacity:.10;pointer-events:none;
+  transform:translate3d(-50%,-50%,-110px);transition:color .95s,opacity .95s}
+/* Brilho especular: luz "do ambiente" que desliza sobre o vidro para a borda
+   que vem à frente e só existe com o card inclinado (--sheen = |progresso|).
+   Filho direto do .a3d, fora da cena: é reflexo na superfície, não profundidade. */
+.a3d-spec{position:absolute;inset:-16%;pointer-events:none;opacity:var(--sheen);will-change:transform,opacity;
+  background:radial-gradient(38% 32% at 50% 44%,rgba(255,255,255,.13),rgba(255,255,255,0) 70%);
+  transform:translate3d(calc(var(--ry)*-1.2%),calc(var(--rx)*1.2%),0)}
 
 
 
@@ -265,7 +295,7 @@ section{padding:104px 0}
 
 
 
-@media(prefers-reduced-motion:reduce){.a3d-flut{animation:none}.a3d::after{animation:none}}
+@media(prefers-reduced-motion:reduce){.a3d-flut{animation:none}.a3d::after{animation:none}.a3d,.a3d-cena{transform:none}.a3d-spec{display:none}}
 
 .cta{background:var(--ink);color:#fff;position:relative;overflow:hidden}
 .cta .deco{position:absolute;right:-6%;top:-20%;width:48%;color:var(--navy);opacity:.7;pointer-events:none}
@@ -484,11 +514,13 @@ footer a:hover{color:#fff}
         <div class="a3d-fundo conecta"></div><div class="a3d-fundo barber"></div><div class="a3d-fundo bella"></div>
         <div class="a3d-cena">
           <div class="a3d-flut">
-            <svg class="a3d-anel" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 4"/></svg>
+            <div class="a3d-halo"></div>
+            <svg class="a3d-selo"><use href="#hex"/></svg>
             <svg class="a3d-hex"><use href="#hex"/></svg>
             <canvas class="a3d-part"></canvas>
             </div>
           </div>
+          <div class="a3d-spec"></div>
         </div>
         <p class="a3d-legenda">Cada negócio tem sua própria forma de funcionar.</p>
       </div>
@@ -603,28 +635,57 @@ new IntersectionObserver(([e])=>{noContato=e.isIntersecting;attFab()},{threshold
 const secs=[...document.querySelectorAll('main section[id]')],navLinks=[...document.querySelectorAll('.nav ul a')];
 new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe&&secs.forEach(x=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe(x));
 
-/* inclinação do painel da marca: a cena persegue o ponteiro com amortecimento.
-   Só com mouse de verdade — em toque o :hover é falso — e nunca com
-   prefers-reduced-motion. O laço para sozinho quando a cena assenta. */
+/* Painel da marca em 3D: inclina com o scroll (entra deitado para trás,
+   endireita no centro da tela, inclina para a frente ao sair) e, com mouse de
+   verdade, também persegue o ponteiro. O progresso é a posição do centro do
+   painel na viewport, lida UMA vez por quadro dentro do rAF — o evento de
+   scroll só acorda o laço. A saída são custom properties (--rx, --ry,
+   --sheen) no .a3d: quem move é o CSS, em transform/opacity, que o compositor
+   aplica sem layout nem repintura. O laço dorme quando assenta e os
+   listeners só existem com o painel perto da tela. Nunca com
+   prefers-reduced-motion. */
 (()=>{
-  const palco=document.querySelector('.a3d'),cena=document.querySelector('.a3d-cena');
-  if(!palco||!cena)return;
+  const palco=document.querySelector('.a3d');
+  if(!palco||!('IntersectionObserver' in window))return;
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  if(!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
-  let alvoX=0,alvoY=0,x=0,y=0,rodando=false;
-  const passo=()=>{
-    x+=(alvoX-x)*.08;y+=(alvoY-y)*.08;
-    cena.style.transform=`rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
-    if(Math.abs(alvoX-x)>.01||Math.abs(alvoY-y)>.01)requestAnimationFrame(passo);else rodando=false;
+  const ROLX=14,ROLY=5;   /* graus pelo scroll, com o centro do painel na borda da tela; 0 no centro */
+  const PONX=8,PONY=10;   /* graus a mais pelo ponteiro (só hover + pointer:fine) */
+  const comMouse=matchMedia('(hover: hover) and (pointer: fine)').matches;
+  /* Topo do painel no documento pela cadeia de offsetTop: caixa de layout,
+     imune ao giro do próprio painel e ao translateY do reveal (.rv), que
+     enganariam o getBoundingClientRect. Sem cache de propósito: o topo da
+     página muda (fontes chegando, o h1 do hero trocando o número de linhas). */
+  const topoDoc=()=>{let t=0,el=palco;while(el){t+=el.offsetTop;el=el.offsetParent}return t};
+  let mx=0,my=0,sobre=false,px=0,py=0;   /* ponteiro em [-.5,.5] e última posição bruta */
+  let rx=0,ry=0,sh=0,rodando=false,pula=true,antes=0;
+  const escreve=()=>{const s=palco.style;s.setProperty('--rx',rx.toFixed(2));s.setProperty('--ry',ry.toFixed(2));s.setProperty('--sheen',sh.toFixed(3))};
+  const passo=agora=>{
+    /* p: +1 com o centro do painel na borda de baixo da viewport, 0 centrado,
+       -1 na de cima — a faixa "cover" de uma view-timeline. Fora dela, satura. */
+    const alt=palco.offsetHeight,vh=innerHeight,centro=topoDoc()+alt/2-scrollY;
+    const p=Math.max(-1,Math.min(1,(centro-vh/2)/((vh+alt)/2)));
+    /* ponteiro: uma leitura por quadro, só em desktop e só durante o hover */
+    if(sobre){const r=palco.getBoundingClientRect();mx=(px-r.left)/r.width-.5;my=-((py-r.top)/r.height-.5)}
+    const aX=p*ROLX+my*PONX,aY=p*ROLY+mx*PONY,aS=Math.min(1,Math.abs(p)+Math.hypot(mx,my));
+    /* Amortecimento por tempo (constante de 110ms): igual a 60 e 120Hz, e é o
+       que esconde o quadro de atraso entre o scroll do compositor e este JS.
+       `pula` assenta direto no alvo ao entrar perto da tela, sem girar do zero. */
+    const dt=Math.min(64,(agora-antes)||16);antes=agora;const k=pula?1:1-Math.exp(-dt/110);pula=false;
+    rx+=(aX-rx)*k;ry+=(aY-ry)*k;sh+=(aS-sh)*k;
+    if(Math.abs(aX-rx)>.02||Math.abs(aY-ry)>.02||Math.abs(aS-sh)>.004){escreve();requestAnimationFrame(passo)}
+    else{rx=aX;ry=aY;sh=aS;escreve();rodando=false}
   };
-  const acorda=()=>{if(!rodando){rodando=true;requestAnimationFrame(passo)}};
-  palco.addEventListener('pointermove',e=>{
-    const r=palco.getBoundingClientRect();
-    alvoX=((e.clientX-r.left)/r.width-.5)*18;
-    alvoY=-((e.clientY-r.top)/r.height-.5)*14;
-    acorda();
-  });
-  palco.addEventListener('pointerleave',()=>{alvoX=0;alvoY=0;acorda()});
+  const acorda=()=>{if(!rodando){rodando=true;antes=performance.now();requestAnimationFrame(passo)}};
+  /* Só escuta scroll e resize com o painel a até 35% da viewport de distância. */
+  new IntersectionObserver(es=>{
+    const perto=es[es.length-1].isIntersecting;
+    for(const ev of ['scroll','resize'])perto?addEventListener(ev,acorda,{passive:true}):removeEventListener(ev,acorda);
+    if(perto){pula=true;acorda()}
+  },{rootMargin:'35% 0px'}).observe(palco);
+  if(comMouse){
+    palco.addEventListener('pointermove',e=>{sobre=true;px=e.clientX;py=e.clientY;acorda()},{passive:true});
+    palco.addEventListener('pointerleave',()=>{sobre=false;mx=my=0;acorda()});
+  }
 })();
 
 /* A marca vira partículas e se remonta como o logo de cada segmento — CS
@@ -660,7 +721,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   const hx=s=>{const v=s.replace('#','');return [parseInt(v.slice(0,2),16),parseInt(v.slice(2,4),16),parseInt(v.slice(4,6),16)]};
   const HEX=new Path2D(dHex.getAttribute('d'));  /* 282x326 em torno de (380.4,600.1) */
   const hexagono=(c,x,y,h,cor)=>{const e=h/326.1;c.save();c.translate(x,y);c.scale(e,e);c.translate(-380.4,-600.1);c.fillStyle=cor;c.fill(HEX);c.restore()};
-  const F_D="'Space Grotesk',system-ui,sans-serif",F_P="'Poppins',system-ui,sans-serif",F_S="'Dancing Script',cursive";
+  const F_D="'Space Grotesk',system-ui,sans-serif",F_P="'Poppins',system-ui,sans-serif",F_S="'Dancing Script',cursive",F_C="'Libre Caslon Text',Georgia,serif";
   /* tracking manual: letterSpacing do canvas ainda não é universal */
   const escreve=(c,s,x,y,tr)=>{for(const ch of s){c.fillText(ch,x,y);x+=c.measureText(ch).width+tr}return x-tr};
   const medeTexto=(c,fonte,s,tr)=>{c.font=fonte;let w=0;for(const ch of s)w+=c.measureText(ch).width+tr;return w-tr};
@@ -710,15 +771,18 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     c.fillStyle=CLARO;c.font='700 '+fs+'px '+F_D;escreve(c,txt,x,50+fs*.36,.04*fs);
   };csSolucoes.paleta=[CLARO];
 
-  /* A tese em três linhas, centradas e ajustadas à caixa: as duas primeiras
-     claras em peso médio; a última, a promessa, em dourado e negrito — a
-     mesma hierarquia de acento do resto do site. */
-  const LINHAS=[['Seu problema.',500,CLARO],['Nossa tecnologia.',500,CLARO],['Uma solução sob medida.',700,OURO1]];
+  /* A tese em três linhas, cada uma composta por segmentos na mesma linha de
+     base: os pronomes — Seu, Nossa, Sua — em itálico serifado dourado (Libre
+     Caslon, a mesma família do eyebrow do Barber), um pouco maiores; o resto
+     em Space Grotesk claro. É o contraste que tira a cara de texto corrido. */
+  const ESTILO={p:{f:n=>'italic 400 '+(n*1.14).toFixed(2)+'px '+F_C,cor:OURO1},g:{f:n=>'600 '+n+'px '+F_D,cor:CLARO}};
+  const TESE=[[['Seu','p'],[' problema.','g']],[['Nossa','p'],[' tecnologia.','g']],[['Sua','p'],[' solução sob medida.','g']]];
   const tese=function(c,k){
-    c.scale(k,k);c.textAlign='center';c.textBaseline='middle';
-    let w=0;for(const [t,pz] of LINHAS){c.font=pz+' 100px '+F_D;w=Math.max(w,c.measureText(t).width)}
-    const lh=1.2,fs=Math.min(100*(BW-6)/w,84/(LINHAS.length*lh)),passo=fs*lh,y0=50-(LINHAS.length-1)*passo/2;
-    LINHAS.forEach(([t,pz,cor],i)=>{c.font=pz+' '+fs+'px '+F_D;c.fillStyle=cor;c.fillText(t,CX,y0+i*passo)});
+    c.scale(k,k);c.textAlign='left';c.textBaseline='alphabetic';
+    const largura=(ln,n)=>ln.reduce((w,[t,e])=>{c.font=ESTILO[e].f(n);return w+c.measureText(t).width},0);
+    let w=0;for(const ln of TESE)w=Math.max(w,largura(ln,100));
+    const lh=1.24,fs=Math.min(100*(BW-6)/w,84/(TESE.length*lh)),passo=fs*lh,y0=50-(TESE.length-1)*passo/2+fs*.35;
+    TESE.forEach((ln,i)=>{let x=CX-largura(ln,fs)/2;const y=y0+i*passo;for(const [t,e] of ln){c.font=ESTILO[e].f(fs);c.fillStyle=ESTILO[e].cor;c.fillText(t,x,y);x+=c.measureText(t).width}});
   };tese.paleta=[CLARO,OURO1];
 
   const formas=[hexMarca,csBarber,csBella,csSolucoes,tese];
@@ -906,7 +970,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
      fonte de fallback e o vetor na certa: o texto "pulava" no fim de cada
      morfagem. Até lá fica o hexágono estático do fallback (.a3d-hex). Se uma
      fonte não vier, os dois lados usam o mesmo fallback e seguem alinhados. */
-  const F=document.fonts,pedidos=["700 20px 'Space Grotesk'","500 20px 'Space Grotesk'","300 20px 'Poppins'","600 20px 'Dancing Script'"];
+  const F=document.fonts,pedidos=["700 20px 'Space Grotesk'","600 20px 'Space Grotesk'","300 20px 'Poppins'","600 20px 'Dancing Script'","italic 400 20px 'Libre Caslon Text'"];
   (F&&F.load?Promise.all(pedidos.map(q=>F.load(q))).then(()=>F.ready).catch(()=>{}):Promise.resolve()).then(iniciar);
 })();
 </script>
