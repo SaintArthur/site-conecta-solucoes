@@ -175,12 +175,23 @@ section{padding:104px 0}
    flutua sozinho (CSS) — dois elementos separados para os dois transforms
    não brigarem pelo mesmo atributo. */
 .a3d{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.09);
-  /* Painel escuro, na família do CTA e do rodapé: navy para ink com brilho
-     azul no centro, sem textura. É o "chão" onde as partículas viram luz. */
-  background:radial-gradient(90% 70% at 50% 46%,rgba(47,125,216,.34) 0%,rgba(47,125,216,0) 62%),
-             linear-gradient(160deg,#0c2a5e 0%,var(--navy) 42%,var(--ink) 100%);
+  /* O fundo acompanha o produto montado: cada tema é uma camada .a3d-fundo
+     que entra por opacidade junto com a morfagem (só opacidade anima, fica
+     no compositor). O background daqui é o fallback antes do JS. */
+  background:linear-gradient(160deg,#142a4d 0%,var(--ink) 58%,#0a1424 100%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 34px 60px -32px rgba(6,50,110,.6);
-  perspective:900px}
+  perspective:900px;transition:border-color .95s}
+.a3d-fundo{position:absolute;inset:0;opacity:0;transition:opacity .95s cubic-bezier(.4,0,.2,1);will-change:opacity}
+/* Conecta: o ink da casa (o mesmo do CTA logo abaixo), com um respiro de navy. */
+.a3d-fundo.conecta{background:radial-gradient(90% 70% at 50% 46%,rgba(47,125,216,.22) 0%,rgba(47,125,216,0) 62%),linear-gradient(160deg,#142a4d 0%,var(--ink) 58%,#0a1424 100%)}
+/* Barber: o preto e o navy do site dele, com o brilho dourado do CTA de lá. */
+.a3d-fundo.barber{background:radial-gradient(80% 60% at 50% 40%,rgba(162,121,71,.32) 0%,rgba(162,121,71,0) 64%),linear-gradient(160deg,#1c263f 0%,#0a0d14 62%,#07090f 100%)}
+/* Bella: branco para blush, como o hero dela, com um sopro de rosé. */
+.a3d-fundo.bella{background:radial-gradient(80% 60% at 50% 42%,rgba(186,117,140,.22) 0%,rgba(186,117,140,0) 64%),linear-gradient(180deg,#fff 0%,#fbf5f6 55%,#f3dfe6 100%)}
+.a3d:not([data-tema]) .a3d-fundo.conecta,.a3d[data-tema="conecta"] .a3d-fundo.conecta,.a3d[data-tema="barber"] .a3d-fundo.barber,.a3d[data-tema="bella"] .a3d-fundo.bella{opacity:1}
+.a3d[data-tema="bella"]{border-color:#ecdade}
+.a3d[data-tema="barber"] .a3d-anel{color:#e2ca97;opacity:.26}
+.a3d[data-tema="bella"] .a3d-anel{color:#ba758c;opacity:.4}
 .a3d::after{content:"";position:absolute;inset:-40% -30%;pointer-events:none;
   background:linear-gradient(112deg,transparent 42%,rgba(255,255,255,.045) 50%,transparent 58%);
   animation:a3d-varre 11s ease-in-out infinite alternate}
@@ -203,7 +214,7 @@ section{padding:104px 0}
 .a3d-hex{position:absolute;left:50%;top:50%;width:52%;aspect-ratio:365/360;color:#e6edf8;
   transform:translate3d(-50%,-50%,10px);filter:drop-shadow(0 22px 34px rgba(0,0,0,.45))}
 .a3d-anel{position:absolute;left:50%;top:50%;width:88%;aspect-ratio:1;color:#9fc0ff;opacity:.28;
-  transform:translate3d(-50%,-50%,-40px)}
+  transform:translate3d(-50%,-50%,-40px);transition:color .95s,opacity .95s}
 .a3d-part{z-index:1}
 /* Sem partículas (JS desligado ou menos movimento), o hexágono estático fica. */
 .a3d.animando .a3d-hex{display:none}
@@ -432,6 +443,7 @@ footer a:hover{color:#fff}
     <div class="box rv">
       <div class="a3d-col">
         <div class="a3d" aria-hidden="true">
+        <div class="a3d-fundo conecta"></div><div class="a3d-fundo barber"></div><div class="a3d-fundo bella"></div>
         <div class="a3d-cena">
           <div class="a3d-flut">
             <svg class="a3d-anel" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 4"/></svg>
@@ -604,8 +616,9 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   const BW=LW/LH*100,CX=BW/2;
   const ctx=cv.getContext('2d');
 
-  /* Cores sobre o painel escuro. */
-  const CLARO='#e9eef7',BRANCO='#f6f3ec',ROSE='#cf93aa',ROSE2='#e7b3c6',OURO1='#e2ca97',OURO2='#a27947';
+  /* Cores: claras sobre os temas escuros (Conecta, Barber); plum e rosé do
+     logo original sobre o blush do tema Bella. */
+  const CLARO='#e9eef7',BRANCO='#f6f3ec',OURO1='#e2ca97',OURO2='#a27947',ROSE='#ba758c',PLUM='#3a2431',PLUM2='#5a3f4c';
   const hx=s=>{const v=s.replace('#','');return [parseInt(v.slice(0,2),16),parseInt(v.slice(2,4),16),parseInt(v.slice(4,6),16)]};
   const HEX=new Path2D(dHex.getAttribute('d'));  /* 282x326 em torno de (380.4,600.1) */
   const hexagono=(c,x,y,h,cor)=>{const e=h/326.1;c.save();c.translate(x,y);c.scale(e,e);c.translate(-380.4,-600.1);c.fillStyle=cor;c.fill(HEX);c.restore()};
@@ -636,16 +649,17 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
 
   /* CS Bella: como no cabeçalho do site — "CS" Poppins 300 com tracking .06em,
      "Bella" Dancing Script 600 a 1.5em, na mesma linha de base; hexágono ao
-     lado (símbolo de 44px para fonte de 26px, vão de 12px). */
+     lado (símbolo de 44px para fonte de 26px, vão de 12px). Nas cores do
+     logo original, porque o tema Bella é claro. */
   const csBella=function(c,k){
     c.scale(k,k);c.textBaseline='alphabetic';c.textAlign='left';
     const wCS=medeTexto(c,'300 100px '+F_P,'CS',6),wB=medeTexto(c,'600 150px '+F_S,'Bella',0);
     const hexH=169,hexW=hexH*282/326.1,g1=46,g2=6,W=hexW+g1+wCS+g2+wB,s=(BW-6)/W,fs=100*s;
     let x=CX-W*s/2;const base=50+fs*.35;
     hexagono(c,x+hexW*s/2,50,hexH*s,ROSE);x+=(hexW+g1)*s;
-    c.fillStyle=BRANCO;c.font='300 '+fs+'px '+F_P;x=escreve(c,'CS',x,base,.06*fs)+g2*s;
-    c.fillStyle=ROSE2;c.font='600 '+(fs*1.5)+'px '+F_S;escreve(c,'Bella',x,base,0);
-  };csBella.paleta=[ROSE,BRANCO,ROSE2];
+    c.fillStyle=PLUM2;c.font='300 '+fs+'px '+F_P;x=escreve(c,'CS',x,base,.06*fs)+g2*s;
+    c.fillStyle=PLUM;c.font='600 '+(fs*1.5)+'px '+F_S;escreve(c,'Bella',x,base,0);
+  };csBella.paleta=[ROSE,PLUM2,PLUM];
 
   /* CS Soluções: no traje do wordmark Conecta — hexágono + Space Grotesk 700
      em caixa alta com tracking .04em, o mesmo do .brand do cabeçalho. */
@@ -672,6 +686,9 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   const formas=[hexMarca,csBarber,csBella,csSolucoes,tese];
   /* A frase tem três linhas: ganha mais pausa que um logo. */
   const PAUSA=[SEGURA,SEGURA,SEGURA,SEGURA,3800];
+  /* Tema do fundo por quadro; muda no início da morfagem, para o fundo
+     trocar enquanto as partículas viajam. */
+  const TEMAS=['conecta','barber','bella','conecta','conecta'];
 
   /* Rasteriza a forma e distribui os pontos por uma grade com deslocamento
      aleatório dentro de cada célula. Passo constante sobre a varredura punha
@@ -750,7 +767,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
      misturada pela passagem. Paletas têm no máximo 4 cores. */
   let palDe,palPara;const grupo=new Uint8Array(N);
   const prepararCores=()=>{const a=(atual+formas.length-1)%formas.length,cd=nuvens[a].cor,cp=nuvens[atual].cor;palDe=nuvens[a].pal;palPara=nuvens[atual].pal;for(let i=0;i<N;i++)grupo[i]=cd[i]*4+cp[i]};
-  const estado=()=>{palco.dataset.quadro=atual;palco.dataset.fase=fase};
+  const estado=()=>{palco.dataset.quadro=atual;palco.dataset.fase=fase;palco.dataset.tema=TEMAS[atual]};
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
     ctx.clearRect(0,0,cv.width,cv.height);
