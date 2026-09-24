@@ -34,17 +34,29 @@ rever o mesmo texto nos outros dois sites (lá o envio pode ser diferente).
 ## 3. Número de WhatsApp ✅ CONFIRMADO
 
 Os 4 links usam `wa.me/5527999073651`. **Confirmado como o comercial correto** da
-Conecta (23/09/2026) — mantido. Não confundir com `5527999941710`, que nos sites do
-Barber e do Bella é o número pessoal do Matheus, ainda a trocar por lá.
+Conecta (23/09/2026) — mantido, e agora é também o dos sites do Barber e do Bella
+(o `5527999941710`, pessoal do Matheus, saiu de lá).
 
 ---
 
-## Nos outros repositórios (ainda em aberto)
+## Formulário (23/09/2026)
 
-- **site-cs-bella** — 23 ocorrências ainda dizendo 15 dias, e a contradição do "grátis".
-- **site-cs-barber** — trial já corrigido; sobra a contradição do "grátis".
+Testado ao vivo com saídas interceptadas e corrigido: WhatsApp colado ou
+autopreenchido com +55 ou 0 chegava como outro número (agora normaliza; número
+de fora do Brasil com "+" e código de país é aceito — o site cita clientes em
+Portugal); DDD 55 (RS) com um dígito a mais não vira outro número; segmento sem
+escolha sai como "Tenho um negócio" em vez de "barbearia"; campos com 16px
+(zoom do iPhone); botão desabilitado sem JavaScript e o formulário visível sem
+ele; fallback quando o pop-up é bloqueado; trava contra envio duplicado; aviso
+de LGPD reescrito (os dados vão ao WhatsApp, serviço da Meta).
 
-Cada um tem o próprio `PENDENCIAS.md` com o detalhe.
+## Nos outros repositórios
+
+**site-cs-barber** e **site-cs-bella**: resolvidos trial de 7 dias, WhatsApp
+comercial da Conecta (`5527999073651`), CNPJ fora do rodapé, aviso de LGPD e as
+mesmas correções de formulário. "Grátis" fica, por decisão do dono. Detalhe no
+`PENDENCIAS.md` de cada um — e lá o push não publica: é preciso rodar o
+`./publicar.sh` (AWS).
 
 ## Publicação
 

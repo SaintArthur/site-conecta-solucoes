@@ -14,6 +14,7 @@
 <meta property="og:description" content="Tecnologia própria, 100% modular. Sistemas que se moldam ao negócio: CS Barber, CS Bella e soluções sob medida.">
 <meta property="og:url" content="https://www.conectasolucoes.ia.br/">
 <meta name="twitter:card" content="summary_large_image">
+<noscript><style>.rv{opacity:1;transform:none}</style></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&family=Poppins:wght@300&family=Dancing+Script:wght@600&family=Libre+Caslon+Text:ital@0;1&display=swap" rel="stylesheet">
@@ -331,7 +332,7 @@ section{padding:104px 0}
 .cta p{color:#b9c6d8;font-size:17px;margin-top:18px;max-width:520px;font-weight:300}
 .cta form{background:#fff;border-radius:18px;padding:26px;color:var(--ink);display:grid;gap:12px}
 .cta label{font-size:12px;font-weight:500;color:var(--slate-2);letter-spacing:.06em;text-transform:uppercase}
-.cta input,.cta select{width:100%;border:1px solid var(--line);border-radius:10px;padding:13px 14px;font:inherit;font-size:15px;margin-top:6px;background:#fff}
+.cta input,.cta select{width:100%;border:1px solid var(--line);border-radius:10px;padding:13px 14px;font:inherit;font-size:16px;margin-top:6px;background:#fff}
 .cta form .btn{justify-content:center;width:100%;margin-top:6px}
 .cta small{font-size:12px;color:var(--slate-2);text-align:center}
 .cta input[aria-invalid="true"],.cta select[aria-invalid="true"]{border-color:var(--error);background:#fdf6f5}
@@ -581,21 +582,22 @@ footer a:hover{color:#fff}
       </div>
       <div>
         <label for="w">WhatsApp</label>
-        <input id="w" name="whatsapp" type="tel" required autocomplete="tel-national" inputmode="numeric" enterkeyhint="send" maxlength="16" placeholder="(27) 9 0000-0000" aria-describedby="w-err">
-        <p class="err" id="w-err" hidden>Informe um WhatsApp com DDD, no formato (00) 00000-0000.</p>
+        <input id="w" name="whatsapp" type="tel" required autocomplete="tel-national" inputmode="numeric" enterkeyhint="send" maxlength="20" placeholder="(27) 99999-0000" aria-describedby="w-err">
+        <p class="err" id="w-err" hidden>Informe um celular ou fixo com DDD, como (27) 99999-0000. De fora do Brasil, comece com + e o código do país.</p>
       </div>
       <div>
         <label for="s">Tipo de negócio</label>
         <select id="s" name="segmento">
+          <option value="" data-msg="um negócio" selected>Selecione</option>
           <option data-msg="uma barbearia">Barbearia</option>
           <option data-msg="um salão de beleza e estética">Salão de beleza / estética</option>
           <option data-msg="um negócio de outro segmento">Outro segmento</option>
         </select>
       </div>
-      <button class="btn btn-primary" type="submit">Pedir diagnóstico</button>
+      <button class="btn btn-primary" type="submit" disabled>Pedir diagnóstico</button>
       <p class="form-status" id="form-status" role="status" aria-live="polite" hidden></p>
+      <small>Ao enviar, abrimos o WhatsApp (serviço da Meta) com uma mensagem pronta com os dados preenchidos. Ela só chega à Conecta Soluções quando você tocar em enviar lá. O site não guarda esses dados, e usamos seu contato só para falar do seu pedido, conforme a LGPD.</small>
       <small>Resposta em horário comercial, seg a sáb.</small>
-      <small>Seu nome e WhatsApp são usados só para montar sua mensagem e falar com você — não guardamos em servidor nem compartilhamos com terceiros. Ao enviar, você concorda com esse uso (LGPD).</small>
       <noscript>
         <p class="nojs">O envio automático precisa de JavaScript. Fale com a gente direto no
         <a href="https://wa.me/5527999073651?text=Ol%C3%A1!%20Quero%20falar%20com%20a%20equipe%20da%20Conecta." target="_blank" rel="noopener">nosso WhatsApp</a>.</p>
@@ -637,29 +639,77 @@ reservaRot();addEventListener('resize',()=>requestAnimationFrame(reservaRot),{pa
 if(document.fonts)document.fonts.ready.then(()=>{largRot=0;reservaRot()});
 setInterval(()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;rot.classList.add('out');setTimeout(()=>{wi=(wi+1)%words.length;rot.textContent=words[wi];rot.classList.remove('out')},300)},2200);
 const form=document.getElementById('lead'),tel=document.getElementById('w');
-const nome=form.elements.nome,status=document.getElementById('form-status');
-tel.addEventListener('input',()=>{let v=tel.value.replace(/\D/g,'').slice(0,11);tel.value=v.length>6?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
+const nome=form.elements.nome,status=document.getElementById('form-status'),btn=form.querySelector('button[type=submit]');
 const erro=(campo,mostrar,texto)=>{const p=document.getElementById(campo.id+'-err');if(texto)p.textContent=texto;campo.setAttribute('aria-invalid',mostrar?'true':'false');p.hidden=!mostrar};
+/* WhatsApp colado do perfil ou da agenda vem como "+55 27 99999-0000" ou
+   "0 27 9...". Cortar direto em 11 dígitos lia o 55 do DDI como DDD e o
+   número chegava errado na mensagem. Normaliza: só dígitos, sem zero de
+   operadora, sem o 55 quando sobram 12 ou 13 dígitos, e só então 11. */
+const TEL_OK=/^[1-9]{2}(9\d{8}|[2-8]\d{7})$/;
+const normTel=v=>{let d=v.replace(/\D/g,'').replace(/^0+/,'');if((d.length===12||d.length===13)&&d.startsWith('55'))d=d.slice(2).replace(/^0+/,'');return d.slice(0,11)};
+/* Celular sai (27) 99999-0000 e fixo (27) 3333-4444. Enquanto digita, o
+   primeiro dígito depois do DDD decide: celular sempre começa com 9. */
+/* Número com DDI ("+..."): o "+" fica à vista enquanto a pessoa digita — a
+   máscara brasileira o apagava na primeira tecla, e "+55 91 9..." digitado
+   virava um número do RS. Com +55 e o resto já formando um número brasileiro
+   completo, vira a máscara de sempre. Qualquer outro país (a Conecta tem
+   clientes em Portugal) fica como digitado, de 8 a 15 dígitos (E.164). */
+const comDDI=v=>{if(!/^\s*\+/.test(v))return null;const d=v.replace(/\D/g,'').slice(0,15);if(d.startsWith('55')){const b=d.slice(2).replace(/^0+/,'');if(TEL_OK.test(b))return{br:b}}return{intl:d}};
+const intlOk=d=>!d.startsWith('55')&&d.length>=8&&d.length<=15&&d[0]!=='0';
+const fmtTel=d=>{if(d.length<3)return d;const r=d.slice(2),k=d.length===11||r[0]==='9'?5:4;return `(${d.slice(0,2)}) `+(r.length>k?r.slice(0,k)+'-'+r.slice(k):r)};
+/* Tecla a tecla não dá para saber se o 12º dígito depois de "55" é de quem
+   digita o DDI ou um dígito a mais de quem tem DDD 55 (RS): normalizar ali
+   apagaria o número certo. Nesse caso o DDI fica à vista ("+55 (27) 9...")
+   e um apagar desfaz; a normalização vem ao sair do campo e no envio.
+   Colagem e autopreenchimento (vários dígitos de uma vez) normalizam já. */
+/* Quem continua digitando depois de um número completo e válido não reescreve
+   o número: sem isso, um DDD 55 (RS) com um dígito a mais virava outro número
+   válido ("(55) 98765-4321" + 0 → "(98) 7654-3210"). */
+let telDig=0,telAnt='';
+tel.addEventListener('input',()=>{const c=comDDI(tel.value);
+ if(c){tel.value=c.br?fmtTel(c.br):'+'+c.intl;telDig=tel.value.replace(/\D/g,'').length;telAnt=c.br||'';if(tel.getAttribute('aria-invalid')==='true'&&(c.br||intlOk(c.intl)))erro(tel,false);return}
+ const cru=tel.value.replace(/\D/g,'');
+ if(telAnt.length===11&&TEL_OK.test(telAnt)&&cru.length>11&&cru.startsWith(telAnt)){tel.value=fmtTel(telAnt);telDig=11;return}
+ const d=cru.replace(/^0+/,''),tecla=d.length-telDig<=1;
+ tel.value=tecla&&d.length>11&&d.startsWith('55')?'+55 '+fmtTel(d.slice(2,13)):fmtTel(normTel(d));
+ telDig=tel.value.replace(/\D/g,'').length;telAnt=tel.value.startsWith('+')?'':normTel(tel.value);
+ if(tel.getAttribute('aria-invalid')==='true'&&TEL_OK.test(normTel(tel.value)))erro(tel,false)});
+tel.addEventListener('blur',()=>{if(comDDI(tel.value))return;const d=normTel(tel.value);if(TEL_OK.test(d)){tel.value=fmtTel(d);telDig=d.length}});
 const NOME_OK=/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’\- ]*[A-Za-zÀ-ÖØ-öø-ÿ]$/;
 const NOME_PROIBIDO=/[^A-Za-zÀ-ÖØ-öø-ÿ'’\- ]/g;
+/* O erro só some quando o valor fica válido, não na primeira tecla. */
 nome.addEventListener('input',()=>{const v=nome.value,limpo=v.replace(NOME_PROIBIDO,'');
  if(limpo!==v){const pos=Math.max(0,nome.selectionStart-(v.length-limpo.length));nome.value=limpo;nome.setSelectionRange(pos,pos);
   erro(nome,true,'Use apenas letras no seu nome.');return}
- if(nome.getAttribute('aria-invalid')==='true')erro(nome,false)});
-tel.addEventListener('input',()=>{if(tel.getAttribute('aria-invalid')==='true')erro(tel,false)});
-form.addEventListener('submit',e=>{e.preventDefault();if(form.site.value)return;
+ if(nome.getAttribute('aria-invalid')==='true'&&NOME_OK.test(v.trim()))erro(nome,false)});
+/* Duplo clique ou Enter repetido abria duas abas do WhatsApp: reenvio nos
+   2s seguintes a um envio é ignorado. */
+let envioEm=0,tStatus;
+const limpaStatus=()=>{clearTimeout(tStatus);btn.textContent='Pedir diagnóstico';status.hidden=true;status.textContent=''};
+form.addEventListener('submit',e=>{e.preventDefault();if(form.site.value||Date.now()-envioEm<2000)return;
  const seg=form.elements.segmento;
- const n=nome.value.trim(),w=tel.value.replace(/\D/g,'');
- const nOk=NOME_OK.test(n),wOk=w.length>=10;
+ const n=nome.value.trim(),c=comDDI(tel.value),w=c?(c.br||''):normTel(tel.value);
+ const nOk=NOME_OK.test(n),wOk=c?(c.br?true:intlOk(c.intl)):TEL_OK.test(w);
  erro(nome,!nOk,n.length<2?'Informe o seu nome.':'Use apenas letras no seu nome.');
  erro(tel,!wOk);
- if(!nOk||!wOk){(nOk?tel:nome).focus();return}
+ /* Com erro, o "Abrindo o WhatsApp..." de um envio anterior não fica na
+    tela junto; o foco vai para o primeiro campo inválido na ordem da tela. */
+ if(!nOk||!wOk){limpaStatus();(nOk?tel:nome).focus();return}
+ tel.value=c&&!c.br?'+'+c.intl:fmtTel(w);telDig=tel.value.replace(/\D/g,'').length;
  const t=seg.options[seg.selectedIndex].dataset.msg;
- const msg=encodeURIComponent(`Olá, sou ${n}. Tenho ${t} e quero um diagnóstico da Conecta. Meu WhatsApp: ${tel.value}.`);
- const btn=form.querySelector('.btn');btn.textContent='Abrindo o WhatsApp...';
+ const url='https://wa.me/5527999073651?text='+encodeURIComponent(`Olá, sou ${n}. Tenho ${t} e quero um diagnóstico da Conecta. Meu WhatsApp: ${tel.value}.`);
+ envioEm=Date.now();btn.textContent='Abrindo o WhatsApp...';
  status.hidden=false;status.textContent='Abrindo o WhatsApp com a sua mensagem pronta.';
- window.open('https://wa.me/5527999073651?text='+msg,'_blank');
- setTimeout(()=>{btn.textContent='Pedir diagnóstico';status.hidden=true;status.textContent=''},2500)});
+ /* Sem 'noopener' nas features: com ele o window.open sempre devolve null e
+    não daria para saber se abriu; o opener é cortado à mão. Popup bloqueado
+    (navegador interno do Instagram, por exemplo) abre na mesma aba. */
+ const aba=window.open(url,'_blank');
+ if(aba&&!aba.closed)aba.opener=null;else location.href=url;
+ clearTimeout(tStatus);tStatus=setTimeout(limpaStatus,2500)});
+/* O botão nasce disabled no HTML: sem JavaScript, o submit fazia GET na
+   própria página com nome e WhatsApp na URL. Só habilita com o handler
+   acima já registrado. */
+btn.disabled=false;
 const nav=document.querySelector('.nav'),bg=document.querySelector('.burger');
 bg.addEventListener('click',()=>{const o=nav.classList.toggle('open');bg.setAttribute('aria-expanded',o);bg.setAttribute('aria-label',o?'Fechar menu':'Abrir menu')});
 document.querySelectorAll('.mnav a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');bg.setAttribute('aria-expanded','false')}));
