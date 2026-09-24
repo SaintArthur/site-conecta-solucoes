@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&family=Poppins:wght@300&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&family=Poppins:wght@300&family=Dancing+Script:wght@600&family=Libre+Caslon+Text:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#06326e; --navy-deep:#041f46; --slate:#34495e; --slate-2:#5c6f85;
@@ -161,6 +161,38 @@ section{padding:104px 0}
 .founders .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
 .founders .pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:13px;color:var(--navy);font-weight:500;white-space:nowrap}
 .founders .pill i{width:8px;height:8px;border-radius:50%;background:var(--gold);display:block}
+/* A seção acompanha o tema do card (data-tema também na <section>): caixa,
+   título, texto, pílulas e legenda mudam de cor no mesmo tempo da morfagem.
+   Os fundos Barber e Bella são pseudo-elementos que entram por opacidade,
+   porque gradiente não interpola. A família do título não muda: trocar a
+   fonte de um texto que está sendo lido refaz as quebras e ele pula. */
+.founders .box{position:relative;isolation:isolate;transition:border-color .95s}
+.founders .box::before,.founders .box::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;opacity:0;pointer-events:none;transition:opacity .95s cubic-bezier(.4,0,.2,1)}
+.founders .box::before{background:radial-gradient(70% 60% at 25% 20%,rgba(162,121,71,.18) 0%,rgba(162,121,71,0) 60%),linear-gradient(135deg,#141a2b 0%,#0a0d14 60%,#090b11 100%)}
+.founders .box::after{background:radial-gradient(70% 60% at 30% 25%,rgba(186,117,140,.16) 0%,rgba(186,117,140,0) 60%),linear-gradient(135deg,#fff 0%,#fbf5f6 60%,#f6e8ec 100%)}
+#quem[data-tema="barber"] .box::before,#quem[data-tema="bella"] .box::after{opacity:1}
+.founders h2,.founders p,.founders .eyebrow,.founders .pill,.founders .pill i,.founders .a3d-legenda,.founders p.claim b{transition:color .95s,background-color .95s,border-color .95s}
+.founders .eyebrow::before{transition:background-color .95s}
+#quem[data-tema="barber"] .eyebrow::before{background:#c9a56a}
+#quem[data-tema="bella"] .eyebrow::before{background:#ba758c}
+#quem[data-tema="barber"] .box{border-color:rgba(226,202,151,.18)}
+#quem[data-tema="barber"] h2{color:#f4ecdc}
+#quem[data-tema="barber"] p{color:#bdb5a5}
+#quem[data-tema="barber"] p.claim{color:#f1e6cf;border-top-color:rgba(226,202,151,.25)}
+#quem[data-tema="barber"] p.claim b{color:#e2ca97}
+#quem[data-tema="barber"] .eyebrow{color:#c9a56a;font-family:'Libre Caslon Text',Georgia,serif;letter-spacing:.16em}
+#quem[data-tema="barber"] .pill{background:rgba(255,255,255,.05);border-color:rgba(226,202,151,.28);color:#f1e6cf}
+#quem[data-tema="barber"] .pill i{background:#c9a56a}
+#quem[data-tema="barber"] .a3d-legenda{color:#b3aa99;font-family:'Libre Caslon Text',Georgia,serif;font-style:italic;font-size:15px}
+#quem[data-tema="bella"] .box{border-color:#ecdade}
+#quem[data-tema="bella"] h2{color:#3a2431}
+#quem[data-tema="bella"] p{color:#5a3f4c}
+#quem[data-tema="bella"] p.claim{color:#3a2431;border-top-color:#ecdade}
+#quem[data-tema="bella"] p.claim b{color:#ba758c}
+#quem[data-tema="bella"] .eyebrow{color:#ba758c;font-family:'Poppins',system-ui,sans-serif;font-weight:400;letter-spacing:.22em}
+#quem[data-tema="bella"] .pill{background:#fff;border-color:#ecdade;color:#3a2431}
+#quem[data-tema="bella"] .pill i{background:#ba758c}
+#quem[data-tema="bella"] .a3d-legenda{color:#7a5f6a;font-family:'Dancing Script',cursive;font-weight:600;font-size:19px}
 /* Depois das regras base, para vencer a cascata (mesma especificidade). No
    celular as três pílulas ficam numa linha só: "Clientes em Portugal" é longo,
    então a fonte acompanha a largura e, num aparelho muito estreito, a linha
@@ -174,7 +206,7 @@ section{padding:104px 0}
    palco, translateZ nas camadas. A cena inclina pelo ponteiro (JS) e o miolo
    flutua sozinho (CSS) — dois elementos separados para os dois transforms
    não brigarem pelo mesmo atributo. */
-.a3d{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.09);
+.a3d{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.09);container-type:size;
   /* O fundo acompanha o produto montado: cada tema é uma camada .a3d-fundo
      que entra por opacidade junto com a morfagem (só opacidade anima, fica
      no compositor). O background daqui é o fallback antes do JS. */
@@ -203,17 +235,23 @@ section{padding:104px 0}
 /* Marca d'água ao fundo. Sem viewBox no <svg>: o símbolo #hex já traz o dele,
    e um viewBox por fora cria coordenada aninhada que some com o desenho. */
 
-.a3d-col{display:flex;flex-direction:column;gap:14px}
+.a3d-col{display:flex;flex-direction:column;gap:14px;min-height:0}
+/* No desktop a coluna estica até a altura do texto e o card preenche: um
+   painel 4:3 solto numa coluna alta ficava pequeno e desarmônico. */
+@media(min-width:881px){.founders .box{align-items:stretch}.founders .a3d{flex:1 1 auto;aspect-ratio:auto;min-height:360px}}
 .a3d-legenda{font-size:13.5px;line-height:1.45;color:var(--slate-2);text-align:center;max-width:280px;margin:0 auto;font-weight:300}
 /* Partículas: a marca se desfaz e vira a ferramenta de cada segmento.
    Canvas porque não existe equivalente em CSS para morfar nuvem de pontos. */
 /* Medido pela ALTURA: o painel é 4:3, então 86% da largura dava um quadrado
    mais alto que ele, e o overflow:hidden cortava topo e base das formas. */
-.a3d-part{position:absolute;left:50%;top:50%;height:96%;aspect-ratio:411/324;width:auto;
+/* Cabe pelo lado que limitar: pela altura no painel 4:3 do celular, pela
+   largura no painel alto do desktop (unidades de container; o height:96% é
+   o fallback para quem não as tem). */
+.a3d-part{position:absolute;left:50%;top:50%;height:96%;height:min(96cqh,calc(94cqw * 324 / 411));aspect-ratio:411/324;width:auto;
   transform:translate3d(-50%,-50%,10px)}
 .a3d-hex{position:absolute;left:50%;top:50%;width:52%;aspect-ratio:365/360;color:#e6edf8;
   transform:translate3d(-50%,-50%,10px);filter:drop-shadow(0 22px 34px rgba(0,0,0,.45))}
-.a3d-anel{position:absolute;left:50%;top:50%;width:88%;aspect-ratio:1;color:#9fc0ff;opacity:.28;
+.a3d-anel{position:absolute;left:50%;top:50%;width:88%;width:min(88%,96cqh);aspect-ratio:1;color:#9fc0ff;opacity:.28;
   transform:translate3d(-50%,-50%,-40px);transition:color .95s,opacity .95s}
 .a3d-part{z-index:1}
 /* Sem partículas (JS desligado ou menos movimento), o hexágono estático fica. */
@@ -767,7 +805,8 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
      misturada pela passagem. Paletas têm no máximo 4 cores. */
   let palDe,palPara;const grupo=new Uint8Array(N);
   const prepararCores=()=>{const a=(atual+formas.length-1)%formas.length,cd=nuvens[a].cor,cp=nuvens[atual].cor;palDe=nuvens[a].pal;palPara=nuvens[atual].pal;for(let i=0;i<N;i++)grupo[i]=cd[i]*4+cp[i]};
-  const estado=()=>{palco.dataset.quadro=atual;palco.dataset.fase=fase;palco.dataset.tema=TEMAS[atual]};
+  const secao=palco.closest('section');
+  const estado=()=>{palco.dataset.quadro=atual;palco.dataset.fase=fase;palco.dataset.tema=TEMAS[atual];if(secao)secao.dataset.tema=TEMAS[atual]};
   const desenhar=()=>{
     if(!lado)medir();if(!lado)return;
     ctx.clearRect(0,0,cv.width,cv.height);
@@ -859,6 +898,9 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     medir();repousa();
   };
   addEventListener('resize',()=>{lado=0},{passive:true});
+  /* O card estica com a coluna de texto no desktop: se a coluna reflui (fonte
+     carregando, viewport mudando), o buffer do canvas precisa refazer. */
+  if(window.ResizeObserver)new ResizeObserver(()=>{lado=0}).observe(cv);
 
   /* Espera as fontes dos logos. Amostrar antes delas deixava as partículas na
      fonte de fallback e o vetor na certa: o texto "pulava" no fim de cada
