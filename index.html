@@ -154,6 +154,15 @@ section{padding:104px 0}
 .founders{background:#fff;padding-top:0}
 .founders .box{display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:center;border:1px solid var(--line);border-radius:24px;padding:48px;background:linear-gradient(135deg,#fff,var(--mist))}
 @media(max-width:880px){.founders .box{grid-template-columns:1fr;padding:22px}.founders .a3d-col{order:2;margin-top:8px}}
+/* As colunas do grid podem encolher abaixo do conteúdo. Sem isso a linha de
+   pílulas (nowrap) impunha ~300px de largura mínima: o card saía da caixa e,
+   em celulares de 320–360px, a página inteira ficava mais larga que a tela. */
+.founders .box>*{min-width:0}
+/* Celular: 5:4, um pouco mais alto que 4:3, para o holograma ter chão para a
+   sombra. Tablet: faixa 16:9 na largura toda — em 4:3 o card passava de 670px
+   de largura por 500 de altura e engolia a seção. */
+@media(max-width:560px){.founders .a3d{aspect-ratio:5/4}}
+@media(min-width:561px) and (max-width:880px){.founders .a3d{aspect-ratio:16/9}}
 .founders h2{font-size:clamp(28px,3.2vw,40px);color:var(--navy);margin-top:16px}
 .founders p{color:var(--slate);margin-top:16px;font-size:16px}
 .founders p.claim{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink);font-size:17px}
@@ -163,13 +172,13 @@ section{padding:104px 0}
 .founders .pill i{width:8px;height:8px;border-radius:50%;background:var(--gold);display:block}
 /* A seção acompanha o tema do card (data-tema também na <section>): caixa,
    título, texto, pílulas e legenda mudam de cor no mesmo tempo da morfagem.
-   Os fundos Barber e Bella são pseudo-elementos que entram por opacidade,
-   porque gradiente não interpola. A família do título não muda: trocar a
+   Os fundos Barber e Bella são pseudo-elementos que entram por opacidade
+   sobre o fundo original da caixa (um degradê, que não interpola). A família do título não muda: trocar a
    fonte de um texto que está sendo lido refaz as quebras e ele pula. */
 .founders .box{position:relative;isolation:isolate;transition:border-color .95s}
 .founders .box::before,.founders .box::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;opacity:0;pointer-events:none;transition:opacity .95s cubic-bezier(.4,0,.2,1)}
-.founders .box::before{background:radial-gradient(70% 60% at 25% 20%,rgba(162,121,71,.18) 0%,rgba(162,121,71,0) 60%),linear-gradient(135deg,#141a2b 0%,#0a0d14 60%,#090b11 100%)}
-.founders .box::after{background:radial-gradient(70% 60% at 30% 25%,rgba(186,117,140,.16) 0%,rgba(186,117,140,0) 60%),linear-gradient(135deg,#fff 0%,#fbf5f6 60%,#f6e8ec 100%)}
+.founders .box::before{background:#121723}
+.founders .box::after{background:#fbf5f6}
 #quem[data-tema="barber"] .box::before,#quem[data-tema="bella"] .box::after{opacity:1}
 .founders h2,.founders p,.founders .eyebrow,.founders .pill,.founders .pill i,.founders .a3d-legenda,.founders p.claim b{transition:color .95s,background-color .95s,border-color .95s}
 .founders .eyebrow::before{transition:background-color .95s}
@@ -202,6 +211,14 @@ section{padding:104px 0}
   .founders .pills::-webkit-scrollbar{display:none}
   .founders .pill{flex:0 0 auto;padding:7px 8px;font-size:clamp(9.5px,2.45vw,11.5px);gap:4px}
   .founders .pill i{width:5px;height:5px}}
+/* Celular: a caixa perde 4px de respiro de cada lado e as pílulas, o
+   pontinho. É o que faz as três caberem numa linha a partir de 360px com a
+   fonte acompanhando a largura; abaixo disso a linha rola de lado. */
+@media(max-width:560px){
+  .founders .box{padding:18px}
+  .founders .pills{gap:4px;margin:16px -18px 0;padding:0 18px}
+  .founders .pill{padding:6px 8px;font-size:clamp(9px,2.62vw,11.5px);gap:0}
+  .founders .pill i{display:none}}
 /* Painel da marca no lugar da foto. Profundidade de verdade: perspective no
    palco, translateZ nas camadas. A cena inclina pelo ponteiro (JS) e o miolo
    flutua sozinho (CSS) — dois elementos separados para os dois transforms
@@ -209,33 +226,37 @@ section{padding:104px 0}
 .a3d{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.09);container-type:size;
   /* O fundo acompanha o produto montado: cada tema é uma camada .a3d-fundo
      que entra por opacidade junto com a morfagem (só opacidade anima, fica
-     no compositor). O background daqui é o fallback antes do JS. */
-  background:linear-gradient(160deg,#142a4d 0%,var(--ink) 58%,#0a1424 100%);
+     no compositor). Cor chapada, a exata de cada site — a textura é a marca
+     d'água, não degradê. O background daqui é o fallback antes do JS. */
+  background:var(--ink);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 34px 60px -32px rgba(6,50,110,.6);
-  perspective:900px;--sombra:rgba(0,0,0,.55);transition:border-color .95s,--sombra .95s}
-/* registrada para a cor da sombra entrar em transição na troca de tema */
-@property --sombra{syntax:'<color>';inherits:true;initial-value:rgba(0,0,0,.55)}
+  perspective:900px;transition:border-color .95s,box-shadow .95s}
 .a3d-fundo{position:absolute;inset:0;opacity:0;transition:opacity .95s cubic-bezier(.4,0,.2,1);will-change:opacity}
-/* Conecta: o ink da casa (o mesmo do CTA logo abaixo), com um respiro de navy. */
-.a3d-fundo.conecta{background:radial-gradient(90% 70% at 50% 46%,rgba(47,125,216,.22) 0%,rgba(47,125,216,0) 62%),linear-gradient(160deg,#142a4d 0%,var(--ink) 58%,#0a1424 100%)}
-/* Barber: o preto e o navy do site dele, com o brilho dourado do CTA de lá. */
-.a3d-fundo.barber{background:radial-gradient(80% 60% at 50% 40%,rgba(162,121,71,.32) 0%,rgba(162,121,71,0) 64%),linear-gradient(160deg,#1c263f 0%,#0a0d14 62%,#07090f 100%)}
-/* Bella: branco para blush, como o hero dela, com um sopro de rosé. */
-.a3d-fundo.bella{background:radial-gradient(80% 60% at 50% 42%,rgba(186,117,140,.22) 0%,rgba(186,117,140,0) 64%),linear-gradient(180deg,#fff 0%,#fbf5f6 55%,#f3dfe6 100%)}
+/* Conecta: o ink da casa, o mesmo do CTA logo abaixo. */
+.a3d-fundo.conecta{background:var(--ink)}
+/* Barber: o preto do site dele. */
+.a3d-fundo.barber{background:#0a0d14}
+/* Bella: o rosé-suave do site dela. */
+.a3d-fundo.bella{background:#f3dfe6}
 .a3d:not([data-tema]) .a3d-fundo.conecta,.a3d[data-tema="conecta"] .a3d-fundo.conecta,.a3d[data-tema="barber"] .a3d-fundo.barber,.a3d[data-tema="bella"] .a3d-fundo.bella{opacity:1}
-.a3d[data-tema="bella"]{border-color:#ecdade;--sombra:rgba(58,36,49,.3)}
-.a3d[data-tema="barber"] .a3d-halo{color:#e2ca97;opacity:.14}
-.a3d[data-tema="bella"] .a3d-halo{color:#ba758c;opacity:.14}
-.a3d::after{content:"";position:absolute;inset:-40% -30%;pointer-events:none;
-  background:linear-gradient(112deg,transparent 42%,rgba(255,255,255,.045) 50%,transparent 58%);
-  animation:a3d-varre 11s ease-in-out infinite alternate}
-@keyframes a3d-varre{from{transform:translateX(-28%)}to{transform:translateX(28%)}}
+.a3d[data-tema="barber"]{border-color:rgba(226,202,151,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 34px 60px -32px rgba(0,0,0,.75)}
+.a3d[data-tema="bella"]{border-color:#ecdade;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 34px 60px -32px rgba(58,36,49,.4)}
 .a3d-cena{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
 .a3d-flut{position:absolute;inset:0;transform-style:preserve-3d;
   animation:a3d-flutua 9s cubic-bezier(.45,0,.55,1) infinite alternate}
 @keyframes a3d-flutua{from{transform:translate3d(0,-6px,0)}to{transform:translate3d(0,10px,0)}}
 /* Marca d'água ao fundo. Sem viewBox no <svg>: o símbolo #hex já traz o dele,
-   e um viewBox por fora cria coordenada aninhada que some com o desenho. */
+   e um viewBox por fora cria coordenada aninhada que some com o desenho.
+   Grande, quase transparente e deslocada para o canto, como o deco do CTA.
+   Some no quadro da logo Conecta sozinha (dois hexágonos sobrepostos
+   confundiam) e antes do JS, quando o hexágono estático de fallback está no
+   palco. */
+.a3d-selo{position:absolute;left:60%;top:56%;width:min(84%,104cqh);aspect-ratio:365/360;color:#9fc0ff;opacity:0;pointer-events:none;
+  transform:translate3d(-50%,-50%,-110px);transition:color .95s,opacity .95s}
+.a3d.animando .a3d-selo{opacity:.13}
+.a3d.animando[data-tema="barber"] .a3d-selo{color:#e2ca97;opacity:.12}
+.a3d.animando[data-tema="bella"] .a3d-selo{color:#ba758c;opacity:.2}
+.a3d.animando[data-quadro="0"] .a3d-selo{opacity:0}
 
 .a3d-col{display:flex;flex-direction:column;gap:14px;min-height:0}
 /* No desktop a coluna estica até a altura do texto e o card preenche: um
@@ -250,13 +271,12 @@ section{padding:104px 0}
    largura no painel alto do desktop (unidades de container; o height:96% é
    o fallback para quem não as tem). */
 .a3d-part{position:absolute;left:50%;top:50%;height:96%;height:min(96cqh,calc(94cqw * 324 / 411));aspect-ratio:411/324;width:auto;
-  /* A logo flutua: o canvas fica 40px à frente do painel (paralaxe contra o
-     halo quando o card inclina) e projeta a sombra da própria forma —
-     drop-shadow segue o alfa do desenho, partículas incluídas. O deslocamento
-     da sombra acompanha a inclinação, como se a luz fosse fixa; a cor vem do
-     tema por --sombra. filter numa folha da cadeia 3D achata só a folha. */
-  transform:translate3d(-50%,-50%,40px);
-  filter:drop-shadow(calc(var(--ry)*-1.1px) calc(16px + var(--rx)*1.1px) 20px var(--sombra))}
+  /* Holograma, só no quadro da logo Conecta: o JS escreve --hz/--hy/--hr/--hq
+     a cada quadro com um envelope — a logo sobe, avança no eixo Z e balança
+     em 3D; em todos os outros quadros elas valem 0 e o canvas fica rente ao
+     vidro. Gira em torno do centro do hexágono (46% da altura do canvas). */
+  transform-origin:50% 46%;
+  transform:translate3d(-50%,calc(-50% + var(--hy)*1%),calc(10px + var(--hz)*1px)) rotateX(calc(var(--hq)*1deg)) rotateY(calc(var(--hr)*1deg))}
 .a3d-hex{position:absolute;left:50%;top:50%;width:52%;aspect-ratio:365/360;color:#e6edf8;
   transform:translate3d(-50%,-50%,10px);filter:drop-shadow(0 22px 34px rgba(0,0,0,.45))}
 .a3d-part{z-index:1}
@@ -267,27 +287,29 @@ section{padding:104px 0}
    translateY do reveal no .box não entra na conta) — guiado por --rx/--ry,
    em graus, que o JS escreve uma vez por quadro. A cena interna repete o
    giro num eco de .6: como cada camada está num translateZ diferente, é
-   esse eco que faz a paralaxe (halo e anel grande ao fundo deslizam mais; o
-   canvas, quase no vidro, quase nada). Sem JS tudo vale 0 e o card fica
+   esse eco que faz a paralaxe (a marca d'água ao fundo desliza mais; o
+   canvas, quase no vidro, quase nada). O ponteiro (--qx/--qy) gira só a
+   cena: o card fica e o conteúdo inclina dentro dele, como era. Sem JS tudo vale 0 e o card fica
    plano. Safari: quem recorta (.a3d, overflow+radius) nunca é preserve-3d e
    tem camada própria (will-change+transform) — é assim que o WebKit aplica
    o recorte arredondado aos filhos compostos; a cadeia preserve-3d
    (.a3d-cena > .a3d-flut) só carrega transform, sem overflow/opacity/filter. */
-.a3d{--rx:0;--ry:0;--sheen:0;will-change:transform;
+.a3d{--rx:0;--ry:0;--sheen:0;--qx:0;--qy:0;--hz:0;--hy:0;--hr:0;--hq:0;--hs:1;--ho:0;will-change:transform;
   transform:perspective(1100px) rotateX(calc(var(--rx)*1deg)) rotateY(calc(var(--ry)*1deg))}
-.a3d-cena{transform:rotateX(calc(var(--rx)*.6deg)) rotateY(calc(var(--ry)*.6deg))}
-/* Camada de fundo da paralaxe: um halo difuso lá atrás, na cor do tema
-   (currentColor, para entrar em transição). Ele também ilumina o centro do
-   painel, e é contra essa luz que a sombra da logo aparece nos temas
-   escuros. Nada com aresta perto das quinas: é gradiente até zero. */
-.a3d-halo{position:absolute;left:50%;top:50%;width:80%;aspect-ratio:1;border-radius:50%;pointer-events:none;color:#9fc0ff;opacity:.18;
-  background:radial-gradient(closest-side,currentColor,transparent);transform:translate3d(-50%,-50%,-150px);transition:color .95s,opacity .95s}
+.a3d-cena{transform:rotateX(calc(var(--rx)*.6deg + var(--qx)*1deg)) rotateY(calc(var(--ry)*.6deg + var(--qy)*1deg))}
+/* Sombra do holograma no "chão" do card: filha da cena, fora da .a3d-flut,
+   então não sobe nem balança com a logo — só encolhe e clareia quando ela
+   sobe e cresce e escurece quando desce (--hs/--ho, do mesmo JS). Mesma
+   caixa do canvas, para cair logo abaixo do hexágono. */
+.a3d-chao{position:absolute;left:50%;top:50%;height:96%;height:min(96cqh,calc(94cqw * 324 / 411));aspect-ratio:411/324;width:auto;pointer-events:none;
+  opacity:var(--ho);transform-origin:50% 85%;transform:translate3d(-50%,-50%,0) scale(var(--hs));
+  background:radial-gradient(18% 4.2% at 50% 85%,rgba(2,6,16,.8),rgba(2,6,16,0)),radial-gradient(30% 7.5% at 50% 85%,rgba(110,160,255,.22),rgba(110,160,255,0))}
 /* Brilho especular: luz "do ambiente" que desliza sobre o vidro para a borda
    que vem à frente e só existe com o card inclinado (--sheen = |progresso|).
    Filho direto do .a3d, fora da cena: é reflexo na superfície, não profundidade. */
 .a3d-spec{position:absolute;inset:-16%;pointer-events:none;opacity:var(--sheen);will-change:transform,opacity;
   background:radial-gradient(38% 32% at 50% 44%,rgba(255,255,255,.13),rgba(255,255,255,0) 70%);
-  transform:translate3d(calc(var(--ry)*-1.2%),calc(var(--rx)*1.2%),0)}
+  transform:translate3d(calc((var(--ry) + var(--qy)*.6)*-1.2%),calc((var(--rx) + var(--qx)*.6)*1.2%),0)}
 
 
 
@@ -297,7 +319,7 @@ section{padding:104px 0}
 
 
 
-@media(prefers-reduced-motion:reduce){.a3d-flut{animation:none}.a3d::after{animation:none}.a3d,.a3d-cena{transform:none}.a3d-spec{display:none}}
+@media(prefers-reduced-motion:reduce){.a3d-flut{animation:none}.a3d,.a3d-cena{transform:none}.a3d-spec{display:none}}
 
 .cta{background:var(--ink);color:#fff;position:relative;overflow:hidden}
 .cta .deco{position:absolute;right:-6%;top:-20%;width:48%;color:var(--navy);opacity:.7;pointer-events:none}
@@ -516,10 +538,11 @@ footer a:hover{color:#fff}
         <div class="a3d-fundo conecta"></div><div class="a3d-fundo barber"></div><div class="a3d-fundo bella"></div>
         <div class="a3d-cena">
           <div class="a3d-flut">
-            <div class="a3d-halo"></div>
+            <svg class="a3d-selo"><use href="#hex"/></svg>
             <svg class="a3d-hex"><use href="#hex"/></svg>
             <canvas class="a3d-part"></canvas>
             </div>
+            <div class="a3d-chao"></div>
           </div>
           <div class="a3d-spec"></div>
         </div>
@@ -637,8 +660,8 @@ const secs=[...document.querySelectorAll('main section[id]')],navLinks=[...docum
 new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe&&secs.forEach(x=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -55% 0px'}).observe(x));
 
 /* Painel da marca em 3D: inclina com o scroll (entra deitado para trás,
-   endireita no centro da tela, inclina para a frente ao sair) e, com mouse de
-   verdade, também persegue o ponteiro. O progresso é a posição do centro do
+   endireita no centro da tela, inclina para a frente ao sair) e, com mouse,
+   a cena persegue o ponteiro dentro do card. O progresso é a posição do centro do
    painel na viewport, lida UMA vez por quadro dentro do rAF — o evento de
    scroll só acorda o laço. A saída são custom properties (--rx, --ry,
    --sheen) no .a3d: quem move é o CSS, em transform/opacity, que o compositor
@@ -650,16 +673,15 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   if(!palco||!('IntersectionObserver' in window))return;
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const ROLX=14,ROLY=5;   /* graus pelo scroll, com o centro do painel na borda da tela; 0 no centro */
-  const PONX=8,PONY=10;   /* graus a mais pelo ponteiro (só hover + pointer:fine) */
-  const comMouse=matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const PONX=14,PONY=18;  /* ponteiro: amplitude total da cena (±7° e ±9°, como era) */
   /* Topo do painel no documento pela cadeia de offsetTop: caixa de layout,
      imune ao giro do próprio painel e ao translateY do reveal (.rv), que
      enganariam o getBoundingClientRect. Sem cache de propósito: o topo da
      página muda (fontes chegando, o h1 do hero trocando o número de linhas). */
   const topoDoc=()=>{let t=0,el=palco;while(el){t+=el.offsetTop;el=el.offsetParent}return t};
   let mx=0,my=0,sobre=false,px=0,py=0;   /* ponteiro em [-.5,.5] e última posição bruta */
-  let rx=0,ry=0,sh=0,rodando=false,pula=true,antes=0;
-  const escreve=()=>{const s=palco.style;s.setProperty('--rx',rx.toFixed(2));s.setProperty('--ry',ry.toFixed(2));s.setProperty('--sheen',sh.toFixed(3))};
+  let rx=0,ry=0,sh=0,qx=0,qy=0,rodando=false,pula=true,antes=0;
+  const escreve=()=>{const s=palco.style;s.setProperty('--rx',rx.toFixed(2));s.setProperty('--ry',ry.toFixed(2));s.setProperty('--sheen',sh.toFixed(3));s.setProperty('--qx',qx.toFixed(2));s.setProperty('--qy',qy.toFixed(2))};
   const passo=agora=>{
     /* p: +1 com o centro do painel na borda de baixo da viewport, 0 centrado,
        -1 na de cima — a faixa "cover" de uma view-timeline. Fora dela, satura. */
@@ -667,14 +689,14 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     const p=Math.max(-1,Math.min(1,(centro-vh/2)/((vh+alt)/2)));
     /* ponteiro: uma leitura por quadro, só em desktop e só durante o hover */
     if(sobre){const r=palco.getBoundingClientRect();mx=(px-r.left)/r.width-.5;my=-((py-r.top)/r.height-.5)}
-    const aX=p*ROLX+my*PONX,aY=p*ROLY+mx*PONY,aS=Math.min(1,Math.abs(p)+Math.hypot(mx,my));
+    const aX=p*ROLX,aY=p*ROLY,bX=my*PONX,bY=mx*PONY,aS=Math.min(1,Math.abs(p)+Math.hypot(mx,my));
     /* Amortecimento por tempo (constante de 110ms): igual a 60 e 120Hz, e é o
        que esconde o quadro de atraso entre o scroll do compositor e este JS.
        `pula` assenta direto no alvo ao entrar perto da tela, sem girar do zero. */
-    const dt=Math.min(64,(agora-antes)||16);antes=agora;const k=pula?1:1-Math.exp(-dt/110);pula=false;
-    rx+=(aX-rx)*k;ry+=(aY-ry)*k;sh+=(aS-sh)*k;
-    if(Math.abs(aX-rx)>.02||Math.abs(aY-ry)>.02||Math.abs(aS-sh)>.004){escreve();requestAnimationFrame(passo)}
-    else{rx=aX;ry=aY;sh=aS;escreve();rodando=false}
+    const dt=Math.min(64,(agora-antes)||16);antes=agora;const k=pula?1:1-Math.exp(-dt/110),kp=1-Math.exp(-dt/180);pula=false;
+    rx+=(aX-rx)*k;ry+=(aY-ry)*k;sh+=(aS-sh)*k;qx+=(bX-qx)*kp;qy+=(bY-qy)*kp;
+    if(Math.abs(aX-rx)>.02||Math.abs(aY-ry)>.02||Math.abs(aS-sh)>.004||Math.abs(bX-qx)>.02||Math.abs(bY-qy)>.02){escreve();requestAnimationFrame(passo)}
+    else{rx=aX;ry=aY;sh=aS;qx=bX;qy=bY;escreve();rodando=false}
   };
   const acorda=()=>{if(!rodando){rodando=true;antes=performance.now();requestAnimationFrame(passo)}};
   /* Só escuta scroll e resize com o painel a até 35% da viewport de distância. */
@@ -683,10 +705,11 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     for(const ev of ['scroll','resize'])perto?addEventListener(ev,acorda,{passive:true}):removeEventListener(ev,acorda);
     if(perto){pula=true;acorda()}
   },{rootMargin:'35% 0px'}).observe(palco);
-  if(comMouse){
-    palco.addEventListener('pointermove',e=>{sobre=true;px=e.clientX;py=e.clientY;acorda()},{passive:true});
-    palco.addEventListener('pointerleave',()=>{sobre=false;mx=my=0;acorda()});
-  }
+  /* Só mouse: toque não tem hover. Pelo pointerType, e não por uma checagem
+     de mídia feita uma vez no load, para valer também quando o aparelho troca
+     de entrada (iPad com trackpad). */
+  palco.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;sobre=true;px=e.clientX;py=e.clientY;acorda()},{passive:true});
+  palco.addEventListener('pointerleave',e=>{if(e.pointerType!=='mouse')return;sobre=false;mx=my=0;acorda()});
 })();
 
 /* A marca vira partículas e se remonta como o logo de cada segmento — CS
@@ -731,7 +754,10 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   /* Cada forma desenha na caixa BWx100 já com as próprias cores; k leva para
      a resolução de amostragem. `paleta` são as cores que as partículas podem
      assumir naquela forma: cada pixel de destino escolhe a mais próxima. */
-  const hexMarca=function(c,k){c.scale(k,k);hexagono(c,CX,50,86,CLARO)};hexMarca.paleta=[CLARO];
+  /* A marca, um pouco menor e acima do centro: sobra chão para a sombra do
+     holograma. HOLO é a posição e o tamanho que o desenho vivo reusa. */
+  const HOLO={x:CX,y:45,h:76};
+  const hexMarca=function(c,k){c.scale(k,k);hexagono(c,HOLO.x,HOLO.y,HOLO.h,CLARO)};hexMarca.paleta=[CLARO];hexMarca.holo=true;
 
   /* CS Barber: traços do logo original do site (grupo #logo) — o símbolo,
      recortado no viewBox do .lg-sym ("440 100 855 970"), e o wordmark, no do
@@ -797,8 +823,9 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   };tese.paleta=[CLARO,OURO1];
 
   const formas=[hexMarca,csBarber,csBella,csSolucoes,tese];
-  /* A frase tem três linhas: ganha mais pausa que um logo. */
-  const PAUSA=[SEGURA,SEGURA,SEGURA,SEGURA,3800];
+  /* A logo Conecta ganha a pausa mais longa, porque é nela que o holograma
+     vive; a frase tem três linhas e também pede mais que um logo. */
+  const PAUSA=[5600,SEGURA,SEGURA,SEGURA,3800];
   /* Tema do fundo por quadro; muda no início da morfagem, para o fundo
      trocar enquanto as partículas viajam. */
   const TEMAS=['conecta','barber','bella','conecta','conecta'];
@@ -875,6 +902,45 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
   const raio=new Float32Array(N),tom=new Float32Array(N);
   for(let i=0;i<N;i++){raio[i]=.62+Math.random()*.55;tom[i]=.55+Math.random()*.45}
   let alfaVetor=1,passagem=1;
+  /* Holograma do quadro da logo. `vida` é o envelope: 0 = rente ao vidro,
+     1 = viva. Sobe em 700ms no começo da pausa e desce nos 650ms finais, então
+     a morfagem sempre parte e chega da figura plana. Viva, a logo sobe,
+     avança no Z, balança em 3D e ganha espessura; a sombra no chão encolhe
+     quando ela sobe. As custom properties vão no .a3d (quem move é o CSS) e
+     só são escritas enquanto mudam. */
+  let vida=0,hR=0,hQ=0,escrito=false;
+  const vive=(dt,S)=>Math.min(suave(Math.min(1,dt/700)),suave(Math.min(1,Math.max(0,(S-dt)/650))));
+  const holo=dt=>{
+    const s=palco.style;
+    if(vida<=0){hR=hQ=0;if(escrito){for(const n of ['--hz','--hy','--hr','--hq','--ho'])s.setProperty(n,'0');s.setProperty('--hs','1');escrito=false}return}
+    const w=dt/1000,bob=Math.sin(w*6.2832/3.4),u=(1-bob)/2;  /* u: 0 = embaixo, 1 = no alto */
+    hR=vida*16*Math.sin(w*6.2832/6.5);hQ=vida*5*Math.sin(w*6.2832/4.6+.9);
+    s.setProperty('--hz',(vida*60).toFixed(1));s.setProperty('--hy',(vida*(-3.2+1.6*bob)).toFixed(2));
+    s.setProperty('--hr',hR.toFixed(2));s.setProperty('--hq',hQ.toFixed(2));
+    s.setProperty('--hs',(1-.24*u*vida).toFixed(3));s.setProperty('--ho',(vida*(.95-.4*u)).toFixed(3));
+    escrito=true;
+  };
+  /* O desenho vivo: camadas de profundidade atrás — a espessura cresce com a
+     vida, a logo "sai" do plano —, a face com brilho e linhas de varredura.
+     A espessura aparece do lado para onde o conjunto está girado: soma o giro
+     do card, o eco da cena, o ponteiro e o balanço (lidos do style inline,
+     sem layout). */
+  const RAD=Math.PI/180,KCAM=10;
+  const holograma=(c,k)=>{
+    const st=palco.style,num=n=>parseFloat(st.getPropertyValue(n))||0;
+    const tY=Math.tan((num('--ry')*1.6+num('--qy')+hR)*RAD),tX=Math.tan((num('--rx')*1.6+num('--qx')+hQ)*RAD),T=HOLO.h*.12*vida;
+    c.save();c.scale(k,k);
+    for(let i=KCAM;i>=1;i--){const t=T*i/KCAM,f=i/KCAM;hexagono(c,HOLO.x-t*tY,HOLO.y+t*tX,HOLO.h,'rgba('+Math.round(150-70*f)+','+Math.round(190-70*f)+',255,'+(.34-.18*f).toFixed(3)+')')}
+    const pulso=.85+.15*Math.sin(performance.now()/480);
+    c.shadowColor='rgba(140,185,255,'+(.85*vida*pulso).toFixed(3)+')';c.shadowBlur=HOLO.h*k*.16*vida;
+    hexagono(c,HOLO.x,HOLO.y,HOLO.h,CLARO);
+    c.restore();
+    /* varredura só sobre o que já tem tinta (source-atop) */
+    const x0=(HOLO.x-HOLO.h*.62)*k,y0=(HOLO.y-HOLO.h*.64)*k,w=HOLO.h*1.24*k,h=HOLO.h*1.28*k,pas=3*dpr,off=(performance.now()/60)%pas;
+    c.save();c.globalCompositeOperation='source-atop';c.fillStyle='rgba(10,24,52,'+(.22*vida).toFixed(3)+')';
+    for(let y=y0-pas+off;y<y0+h;y+=pas)c.fillRect(x0,y,w,Math.max(1,dpr*.9));
+    c.restore();
+  };
   /* Cada partícula sai de uma cor (forma anterior) e chega em outra (forma
      atual). O par vira um grupo; cada grupo é um Path2D pintado com a cor
      misturada pela passagem. Paletas têm no máximo 4 cores. */
@@ -909,7 +975,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
     if(alfaVetor>.005){
       ctx.save();ctx.globalAlpha=alfaVetor;
       ctx.translate(MARGEM*ESC,MARGEM*ESC);
-      formas[atual](ctx,ESC*LH/100);
+      if(vida>.002&&formas[atual].holo)holograma(ctx,ESC*LH/100);else formas[atual](ctx,ESC*LH/100);
       ctx.restore();
     }
   };
@@ -922,7 +988,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
          dentro da morfagem, junto com a partida das partículas: pontilhar
          a figura antes de ela se mexer era justamente o "esboço". */
       const S=PAUSA[atual];
-      alfaVetor=1;passagem=1;
+      alfaVetor=1;passagem=1;vida=formas[atual].holo?vive(dt,S):0;
       if(dt>=S){
         ini.set(px);atual=(atual+1)%formas.length;fim.set(nuvens[atual].pts);prepararCores();
         fase='morfa';marca=agora;estado();
@@ -932,7 +998,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
          volta nos últimos 18% — a janela em que elas chegam com ATRASO=.18.
          Partícula parada em casa nunca fica exposta por mais que um instante:
          ou o vetor a cobre, ou ela já está viajando. */
-      const mp=Math.min(1,dt/MORFA);
+      vida=0;const mp=Math.min(1,dt/MORFA);
       alfaVetor=mp<.14?1-suave(mp/.14):mp<.82?0:suave((mp-.82)/.18);
       passagem=mp;
       const janela=MORFA*(1-ATRASO);let fim_=true;
@@ -951,7 +1017,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
       }
       if(fim_){fase='segura';marca=agora;estado()}
     }
-    desenhar();
+    holo(dt);desenhar();
     requestAnimationFrame(quadro);
   };
 
@@ -959,7 +1025,7 @@ new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){navLinks.forEac
      meio da travessia congelava o quadro atual — e como o quadro podia ser um
      estado disperso, ficava o "esboço" de poeira preso ali. Ao repousar,
      assenta na forma atual como vetor: assim qualquer estado parado é limpo. */
-  const repousa=()=>{fase='segura';passagem=1;alfaVetor=1;px.set(nuvens[atual].pts);estado();desenhar()};
+  const repousa=()=>{fase='segura';passagem=1;alfaVetor=1;vida=0;holo(0);px.set(nuvens[atual].pts);estado();desenhar()};
 
   const iniciar=()=>{
     nuvens=formas.map(amostrar);
